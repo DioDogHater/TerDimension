@@ -5,7 +5,7 @@ The name is "Third Dimension", but with "Ter" for "Terminal".
 # Requirements
 - Linux (Windows terminals suck)
 - CMake
-- SDL (optional)
+- SDL (optional)\
 **That's it.**
 
 # How to build
