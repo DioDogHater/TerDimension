@@ -8,3 +8,4 @@ project(TerDimension)
 
 add_executable(main src/main.c)
 target_link_libraries(main m)
+#target_link_libraries(main pthread)
