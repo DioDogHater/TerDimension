@@ -45,6 +45,9 @@ TD_SDL :
 // Clamps number to limits
 #define TD_CLAMP(n,a,b) (TD_MIN(TD_MAX(n,a),b))
 
+// Square of a number
+#define TD_SQUARE(x) ((x)*(x))
+
 //========= Types ==========
 
 // 3D Vector
@@ -74,10 +77,11 @@ typedef struct{
 // 3D Model
 typedef struct {
 	TD_Vec3* vertices;
-	//TD_Color* colors;		- IMPLEMENTED SOON
+	TD_Color* colors;
 	//TD_Vec3* normals;		- IMPLEMENTED LATER
 	//TD_Vec3* uvs;
 	TD_Face* faces;
+	unsigned int face_count;
 	TD_Transform transform;
 } TD_Mesh;
 
@@ -120,8 +124,6 @@ unsigned int TD_SH2 = 0;
 
 // Constants for rendering
 #define TD_TOP_HALF_BLOCK	"\u2580"
-#define TD_SET_FOREGROUND	"\033[38;2;%d;%d;%dm"
-#define TD_SET_BACKGROUND	"\033[48;2;%d;%d;%dm"
 #define TD_NO_COLORS		"\033[0m"
 #define TD_CLEAR_TERMINAL	"\e[1;1H\e[2J"
 #define TD_HIDE_CURSOR		"\e[?25l"
@@ -129,6 +131,9 @@ unsigned int TD_SH2 = 0;
 
 // Macros for rendering
 #define TD_MOVE_CURSOR(x,y) printf("\033[%d;%dH", (y), (x))
+
+// Include the terminal color header
+#include "td_color.h"
 
 // Char buffer for stdout (to improve performance)
 static char* TD_STDOUT_BUFFER = NULL;
@@ -232,14 +237,7 @@ TD_FUNC void TD_update_screen(void){
 	float* depth_ptr = TD_depth_buffer;
 	for(int y = 0; y < TD_SH-1; y += 2){
 		for(int x = 0; x < TD_SW; x++, uc++, bc++, depth_ptr++){
-			// Change colors and print
-			printf(
-				TD_SET_FOREGROUND
-				TD_SET_BACKGROUND
-				TD_TOP_HALF_BLOCK,
-				uc->r, uc->g, uc->b,
-				bc->r, bc->g, bc->b
-			);
+			TD_COLOR_printchar(uc,bc);
 			*uc = TD_BLACK;
 			*bc = TD_BLACK;
 			*depth_ptr = 100.f;

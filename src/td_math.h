@@ -34,6 +34,7 @@ TD_FUNC TD_Vec3 TD_Vec3_div(TD_Vec3 a, TD_Vec3 b){
 	return (TD_Vec3){a.x/b.x,a.y/b.y,a.z/b.z};
 }
 TD_FUNC TD_Vec3 TD_Vec3_div_scale(TD_Vec3 a, float b){
+	if(b == 0.f) return TD_Vec3ZERO;
 	return (TD_Vec3){a.x/b,a.y/b,a.z/b};
 }
 TD_FUNC float TD_Vec3_magnitude(TD_Vec3 v){
@@ -55,6 +56,13 @@ TD_FUNC TD_Vec3 TD_Vec3_interpolate(TD_Vec3* a, TD_Vec3* b, TD_Vec3* c, TD_Vec3*
 		a->z*bc->x+b->z*bc->y+c->z*bc->z
 	};
 }
+TD_FUNC TD_Color TD_Color_interpolate(TD_Color* a, TD_Color* b, TD_Color* c, TD_Vec3* bc){
+	return (TD_Color){
+		(unsigned char)(a->r*bc->x+b->r*bc->y+c->r*bc->z),
+		(unsigned char)(a->g*bc->x+b->g*bc->y+c->g*bc->z),
+		(unsigned char)(a->b*bc->x+b->b*bc->y+c->b*bc->z)
+	};
+}
 
 //============ Transform ==============
 // Default transform
@@ -69,24 +77,27 @@ TD_FUNC TD_Vec3 TD_Transform_rotationZYX(TD_Transform* t, TD_Vec3* v){
 	if(t->rotation.z != 0.f){
 		tcos = cos(t->rotation.z);
 		tsin = sin(t->rotation.z);
-		r.x = v->x * tcos - v->y * tsin;
-		r.y = v->x * tsin + v->y * tcos;
+		float tmp = r.x * tcos - r.y * tsin;
+		r.y =		r.x * tsin + r.y * tcos;
+		r.x = tmp;
 	}
 
 	// Y rotation
 	if(t->rotation.y != 0.f){
 		tcos = cos(t->rotation.y);
 		tsin = sin(t->rotation.y);
-		r.x = v->x * tcos - v->z * tsin;
-		r.z = v->x * tsin + v->z * tcos;
+		float tmp = r.x * tcos - r.z * tsin;
+		r.z =		r.x * tsin + r.z * tcos;
+		r.x = tmp;
 	}
 
 	// X rotation
 	if(t->rotation.x != 0.f){
 		tcos = cos(t->rotation.x);
 		tsin = sin(t->rotation.x);
-		r.z = v->z * tcos - v->y * tsin;
-		r.y = v->z * tsin + v->y * tcos;
+		float tmp = r.y * tcos - r.z * tsin;
+		r.z =		r.y * tsin + r.z * tcos;
+		r.y = tmp;
 	}
 
 	// Return the result
@@ -102,6 +113,13 @@ TD_FUNC TD_Vec3 TD_Transform_apply(TD_Transform* t, TD_Vec3* v){
 	r = TD_Transform_rotationZYX(t,&r);
 	r = TD_Vec3_add(t->position,r);
 	return r;
+}
+
+//=========== 3D Maths =============
+// Simple perspective
+TD_FUNC TD_Vec3 TD_simple_perspective(TD_Vec3* v){
+	if(v->z <= 0) return *v;
+	return (TD_Vec3){v->x/v->z,v->y/v->z,v->z};
 }
 
 #endif

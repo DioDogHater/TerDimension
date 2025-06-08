@@ -1,7 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 
 #define TD_TERMINAL
+#define TD_COLOR_RGB
 
 #include "terdimension.h"
 
@@ -9,27 +11,47 @@
 #include <sys/time.h>
 
 TD_Color test_shader(TD_ShaderInfo* si){
-	return (TD_Color){
-		si->bc.x * 255,
-		si->bc.y * 255,
-		si->bc.z * 255
-	};
+	return (TD_Color){si->bc.x*255,si->bc.y*255,si->bc.z*255};
 }
 
-TD_Mesh test_mesh = (TD_Mesh){
+TD_Mesh cube_mesh = (TD_Mesh){
 	(TD_Vec3[]){
-		{-0.5f,-0.5f,0.f},
-		{0.5f,-0.5f,0.f},
-		{0.f,0.5f,0.f}
+		{-0.5f,-0.5f,-0.5f},
+		{-0.5f,0.5f,-0.5f},
+		{0.5f,-0.5f,-0.5f},
+		{0.5f,0.5f,-0.5f},
+		{0.5f,-0.5f,0.5f},
+		{0.5f,0.5f,0.5f},
+		{-0.5f,-0.5f,0.5f},
+		{-0.5f,0.5f,0.5f}
 	},
+	NULL,
 	(TD_Face[]){
-		{0,1,2}
+		// Front
+		{2,1,0},
+		{2,3,1},
+		// Back
+		{6,5,4},
+		{6,7,5},
+		// Left
+		{0,1,6},
+		{7,6,1},
+		// Right
+		{4,3,2},
+		{5,3,4},
+		// Top
+		{3,7,1},
+		{3,5,7},
+		// Bottom
+		{0,6,2},
+		{6,4,2}
 	},
+	12,
 	TD_TransformIDENTITY
 };
 
 int main(void){
-	if(!TD_init(150,150))
+	if(!TD_init(100,100))
 		return 1;
 
 	// Time variables
@@ -52,23 +74,18 @@ int main(void){
 		printf("%.f\n",FPS);
 		last_frame = now;
 
-		TD_raster_face(
-			&test_mesh,
-			&test_mesh.faces[0],
-			test_shader
-		);
+		TD_render_mesh(&cube_mesh,test_shader);
 
 		// Display changes + Clear buffers
 		TD_update_screen();
 
-		// Rotate triangle
-		test_mesh.transform.rotation.z += 0.1f;
-
-		// Scale it
-		test_mesh.transform.scale = TD_Vec3_scale(TD_Vec3IDENTITY,cos(time)*0.5f+1.f);
+		// Rotate cube
+		cube_mesh.transform.rotation.y += 0.05f;
+		cube_mesh.transform.rotation.x += 0.1f;
 
 		// Translate it
-		test_mesh.transform.position.x = sin(time)*0.25f;
+		cube_mesh.transform.position.z = sin(time)*2.5f+5.f;
+		cube_mesh.transform.position.x = cos(time);
 
 		// Advance time
 		time += 0.05f;

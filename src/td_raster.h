@@ -7,7 +7,7 @@
 typedef struct{
 	TD_Vec3 bc;
 	TD_Vec3 pos;
-	//TD_Color color;	- IMPLEMENTED SOON
+	TD_Color color;
 	//TD_Vec3 normal;	- IMPLEMENTED LATER
 	//TD_Vec3 uv;
 	//TD_... texture
@@ -67,11 +67,31 @@ TD_FUNC TD_Vec3 TD_triangle_pixel(TD_Vec3* a, TD_Vec3* b, TD_Vec3* c, TD_Vec3 p)
 	}
 }
 
-// Rasterize a single basic triangle on the screen
-TD_FUNC void TD_raster_face(TD_Mesh* m, TD_Face* f, TD_Color (*frag_shader)(TD_ShaderInfo*)){
+// Basically, we check the point in the middle of the triangle
+// If it's "outside", we discard the triangle because it's facing away
+TD_FUNC _Bool TD_is_backface(TD_Vec3* a, TD_Vec3* b, TD_Vec3* c){
+	TD_Vec3 middle = (TD_Vec3){
+		(a->x+b->x+c->x)/3.f,
+		(a->y+b->y+c->y)/3.f,
+		0.f
+	};
+	return TD_Vec3_cmp(TD_triangle_pixel(a,b,c,middle),TD_Vec3ZERO);
+}
+
+// Render a single face of a mesh on the screen
+TD_FUNC void TD_render_face(TD_Mesh* m, TD_Face* f, TD_Color (*frag_shader)(TD_ShaderInfo*)){
+	// 3D transformations
 	TD_Vec3 a = TD_Transform_apply(&m->transform,&m->vertices[f->a]);
 	TD_Vec3 b = TD_Transform_apply(&m->transform,&m->vertices[f->b]);
 	TD_Vec3 c = TD_Transform_apply(&m->transform,&m->vertices[f->c]);
+	a = TD_simple_perspective(&a);
+	b = TD_simple_perspective(&b);
+	c = TD_simple_perspective(&c);
+
+	// Backface culling
+	if(TD_is_backface(&a,&b,&c)) return;
+
+	// Rasterization step
 	TD_Bounds bounds = TD_triangle_bounds(TD_to_screen(&a),TD_to_screen(&b),TD_to_screen(&c));
 	for(int y = bounds.ymin; y < bounds.ymax; y++){
 		for(int x = bounds.xmin; x < bounds.xmax; x++){
@@ -89,7 +109,8 @@ TD_FUNC void TD_raster_face(TD_Mesh* m, TD_Face* f, TD_Color (*frag_shader)(TD_S
 				// Only render pixel if the depth is lesser than the one in depth buffer
 				if(si.pos.z >= 0.f && TD_sample_depth(x,y) > si.pos.z){
 					// Interpolated other data
-					//if(m->colors) ...			- IMPLEMENTED SOON
+					if(m->colors)
+						si.color = TD_Color_interpolate(&m->colors[f->a],&m->colors[f->b],&m->colors[f->c],&si.bc);
 
 					// Fragment shader
 					if(frag_shader){
@@ -99,6 +120,13 @@ TD_FUNC void TD_raster_face(TD_Mesh* m, TD_Face* f, TD_Color (*frag_shader)(TD_S
 				}
 			}
 		}
+	}
+}
+
+TD_FUNC void TD_render_mesh(TD_Mesh* m, TD_Color (*frag_shader)(TD_ShaderInfo*)){
+	if(m->faces == NULL || m->face_count == 0 || m->vertices == NULL) return;
+	for(int i = 0; i < m->face_count; i++){
+		TD_render_face(m,&m->faces[i],frag_shader);
 	}
 }
 
