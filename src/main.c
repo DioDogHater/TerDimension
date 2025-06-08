@@ -9,14 +9,14 @@
 #define TD_COLOR_RGB
 
 #include "terdimension.h"
+#include "td_time.h"
 
-// To calculate FPS
-#include <sys/time.h>
-
+// Fragment shader
 TD_Color test_shader(TD_ShaderInfo* si){
 	return si->color;
 }
 
+// Hard coded cube mesh
 TD_Mesh cube_mesh = (TD_Mesh){
 	(TD_Vec3[]){
 		{-0.5f,-0.5f,-0.5f},
@@ -69,9 +69,7 @@ int main(void){
 		return 1;
 
 	// Time variables
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	unsigned long long now = 0, last_frame = (unsigned long long)(tv.tv_sec) * 1000000 + (unsigned long long)(tv.tv_usec);
+	TD_time_t last_frame = TD_get_ticks();
 	float deltaTime = 0.f, FPS = 1.f;
 
 	// Used for sine waves
@@ -95,15 +93,12 @@ int main(void){
 		cube_mesh.transform.position.x = cos(time);
 
 		// Advance time
-		time += (float)deltaTime;
+		time += deltaTime;
 
 		// Update the FPS counter and deltaTime
-		gettimeofday(&tv, NULL);
-		now = (unsigned long long)(tv.tv_sec) * 1000000 +(unsigned long long)(tv.tv_usec);
-		deltaTime = (now-last_frame)/1000000.f;
-		FPS = 1.f/(float)deltaTime;
+		deltaTime = TD_get_deltaTime(&last_frame);
+		FPS = TD_GET_FPS(deltaTime);
 		printf("%.f  \n",FPS);
-		last_frame = now;
 	}
 
 	TD_quit();
