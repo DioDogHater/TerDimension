@@ -27,7 +27,7 @@ its memory management and logging.\
 - `TD_MEMSET(ptr,c,sz)` : Sets `(sz)` bytes to char `(c)` in memory pointed to by `(ptr`.
 Default is `memset` from `string.h`
 - `TD_LOG(fmt,...)` : Logs error / information, formatted. Default is `printf` from `stdio.h`.\
-\
+
 Furthermore, you have the choice to use either the Terminal implementation
 or the SDL implementation of this engine. To choose between the two, you need to
 define one of these macros before including `terdimension.h`.
@@ -38,7 +38,7 @@ define one of these macros before including `terdimension.h`.
 	current terminal, or disable bright colors if your terminal doesn't support them.
 - `TD_SDL` : Renders inside a SDL window. You need to link SDL to your executable for
 this implementation to work. Check out `CMakeLists.txt` and the CMake docs.\
-\
+
 For the vertex winding order, you can set `TD_winding` to `TD_CW` for clockwise
 winding or `TD_CCW` for counter-clockwise.\
 
@@ -48,7 +48,7 @@ importing them. This 3D engine also uses the Z+ axis as the front axis. The came
 `TD_camera` and is in reality a `TD_Transform`. This engine also supports different aspect
 ratios and scales the output accordingly. Screen dimensions cannot be odd numbers, due to the fact
 that each character on screen represents 2 pixels on top of each other.\
-\
+
 **Mesh structure** : A mesh must contain vertices (position vertices) and faces (all triangles).
 Colors, uvs and normals are optional, but if they are not existant, please set them to NULL.
 If you choose to use colors and/or uvs, there must be 1 color/uv coordinate per vertex, with the same index
