@@ -2,16 +2,19 @@
 #include <stdlib.h>
 #include <math.h>
 
+// Render in the terminal
 #define TD_TERMINAL
+
+// Comment out this line to disable RGB (if color doesn't work)
 #define TD_COLOR_RGB
 
 #include "terdimension.h"
 
-#include <unistd.h>
+// To calculate FPS
 #include <sys/time.h>
 
 TD_Color test_shader(TD_ShaderInfo* si){
-	return (TD_Color){si->bc.x*255,si->bc.y*255,si->bc.z*255};
+	return si->color;
 }
 
 TD_Mesh cube_mesh = (TD_Mesh){
@@ -25,7 +28,16 @@ TD_Mesh cube_mesh = (TD_Mesh){
 		{-0.5f,-0.5f,0.5f},
 		{-0.5f,0.5f,0.5f}
 	},
-	NULL,
+	(TD_Color[]){
+		TD_RED,
+		TD_BLUE,
+		TD_GREEN,
+		TD_WHITE,
+		TD_BLUE,
+		TD_RED,
+		TD_WHITE,
+		TD_GREEN,
+	},
 	(TD_Face[]){
 		// Front
 		{2,1,0},
@@ -51,13 +63,16 @@ TD_Mesh cube_mesh = (TD_Mesh){
 };
 
 int main(void){
-	if(!TD_init(100,100))
+	// Change the resolution
+	// 200x200 and beyond is too laggy
+	if(!TD_init(150,100))
 		return 1;
 
 	// Time variables
-	unsigned long long now, last_frame=0;
-	unsigned long long deltaTime = 0;
-	float FPS = 1.f;
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	unsigned long long now = 0, last_frame = (unsigned long long)(tv.tv_sec) * 1000000 + (unsigned long long)(tv.tv_usec);
+	float deltaTime = 0.f, FPS = 1.f;
 
 	// Used for sine waves
 	float time = 0.f;
@@ -65,33 +80,30 @@ int main(void){
 	TD_clear_screen();
 
 	while(1){
-		// Update the FPS counter and deltaTime
-		struct timeval tv;
-		gettimeofday(&tv, NULL);
-		now = (unsigned long long)(tv.tv_sec) * 1000 +(unsigned long long)(tv.tv_usec)/1000;
-		deltaTime = now - last_frame;
-		FPS = 1000.f/(float)deltaTime;
-		printf("%.f\n",FPS);
-		last_frame = now;
-
+		// Render the cube on screen
 		TD_render_mesh(&cube_mesh,test_shader);
 
 		// Display changes + Clear buffers
 		TD_update_screen();
 
 		// Rotate cube
-		cube_mesh.transform.rotation.y += 0.05f;
-		cube_mesh.transform.rotation.x += 0.1f;
+		cube_mesh.transform.rotation.y += 3.5f*deltaTime;
+		cube_mesh.transform.rotation.x += 4.f*deltaTime;
 
 		// Translate it
 		cube_mesh.transform.position.z = sin(time)*2.5f+5.f;
 		cube_mesh.transform.position.x = cos(time);
 
 		// Advance time
-		time += 0.05f;
+		time += (float)deltaTime;
 
-		// Slow down rendering to avoid jittering
-		usleep(5000);
+		// Update the FPS counter and deltaTime
+		gettimeofday(&tv, NULL);
+		now = (unsigned long long)(tv.tv_sec) * 1000000 +(unsigned long long)(tv.tv_usec);
+		deltaTime = (now-last_frame)/1000000.f;
+		FPS = 1.f/(float)deltaTime;
+		printf("%.f  \n",FPS);
+		last_frame = now;
 	}
 
 	TD_quit();

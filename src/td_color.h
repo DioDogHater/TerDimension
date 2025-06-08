@@ -1,6 +1,8 @@
 #ifndef TERDIMENSION_COLOR_H
 #define TERDIMENSION_COLOR_H
 
+#include "terdimension.h"
+
 // This is a header to handle colors on the Terminal
 // To use RGB colors, define TD_COLOR_RGB
 // Otherwise, 4-bit color will be used as default
@@ -62,7 +64,7 @@ static TD_4bit_color TD_4bit_colors[] =
 	TD_COLOR_ENTRY(Bright Green,	138,226,52,		92,102),
 	TD_COLOR_ENTRY(Bright Yellow,	252,233,79,		93,103),
 	TD_COLOR_ENTRY(Bright Blue,		50,175,255,		94,104),
-	TD_COLOR_ENTRY(Bright Magenta,	173,127,168,		95,105),
+	TD_COLOR_ENTRY(Bright Magenta,	173,127,168,	95,105),
 	TD_COLOR_ENTRY(Bright Cyan,		52,226,226,		96,106),
 	TD_COLOR_ENTRY(Bright Color,	255,255,255,	97,107)
 #endif

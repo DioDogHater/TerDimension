@@ -4,16 +4,6 @@
 #include "terdimension.h"
 #include <math.h>
 
-// Vector constants
-#define TD_Vec3ZERO 	(TD_Vec3){0.f,0.f,0.f}
-#define TD_Vec3IDENTITY (TD_Vec3){1.f,1.f,1.f}
-#define TD_Vec3UP 		(TD_Vec3){0.f,1.f,0.f}
-#define TD_Vec3DOWN 	(TD_Vec3){0.f,-1.f,0.f}
-#define TD_Vec3LEFT 	(TD_Vec3){-1.f,0.f,0.f}
-#define TD_Vec3RIGHT 	(TD_Vec3){1.f,0.f,0.f}
-#define TD_Vec3FRONT 	(TD_Vec3){0.f,0.f,1.f}
-#define TD_Vec3BACK 	(TD_Vec3){0.f,0.f,-1.f}
-
 //======== Vec3 operations ===========
 TD_FUNC TD_Vec3 TD_Vec3_add(TD_Vec3 a, TD_Vec3 b){
 	return (TD_Vec3){a.x+b.x,a.y+b.y,a.z+b.z};
@@ -65,8 +55,6 @@ TD_FUNC TD_Color TD_Color_interpolate(TD_Color* a, TD_Color* b, TD_Color* c, TD_
 }
 
 //============ Transform ==============
-// Default transform
-#define TD_TransformIDENTITY (TD_Transform){TD_Vec3ZERO,TD_Vec3ZERO,TD_Vec3IDENTITY}
 
 // Apply rotation to Vec3 in order ZYX
 TD_FUNC TD_Vec3 TD_Transform_rotationZYX(TD_Transform* t, TD_Vec3* v){

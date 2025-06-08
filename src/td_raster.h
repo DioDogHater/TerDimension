@@ -23,14 +23,14 @@ typedef struct{
 } TD_Bounds;
 
 // Transform 2D (actually 3D) world coordinates into 2D screen coordinates
-#define TD_TO_SCREEN_X(x) (int)((x)*(TD_SW)+0.5f+(TD_SW2))
-#define TD_TO_SCREEN_Y(y) (int)(-(y)*(TD_SH)+0.5f+(TD_SH2))
+#define TD_TO_SCREEN_X(x) (int)((float)(x)*((float)TD_SW)/TD_ASPECT_RATIO+0.5f+(TD_SW2))
+#define TD_TO_SCREEN_Y(y) (int)(-(y)*((float)TD_SH)+0.5f+(TD_SH2))
 TD_FUNC TD_Vec2i TD_to_screen(TD_Vec3* v){
 	return (TD_Vec2i){TD_TO_SCREEN_X(v->x),TD_TO_SCREEN_Y(v->y)};
 }
 
 // Transform 2D screen coordinates into 2D (actually 3D) world coordinates
-#define TD_TO_WORLD_X(x) (((float)(x)+0.5f)-(float)(TD_SW2))/(float)TD_SW
+#define TD_TO_WORLD_X(x) (((float)(x)+0.5f)-(float)(TD_SW2))/(float)TD_SW*TD_ASPECT_RATIO
 #define TD_TO_WORLD_Y(y) -(((float)(y)+0.5f)-(float)(TD_SH2))/(float)TD_SH
 TD_FUNC TD_Vec3 TD_to_world(int x, int y){
 	return (TD_Vec3){TD_TO_WORLD_X(x),TD_TO_WORLD_Y(y),0.f};
@@ -51,13 +51,16 @@ TD_FUNC float TD_edge_function(TD_Vec3* a, TD_Vec3* b, TD_Vec3* c){
 	return (c->x-a->x) * (b->y-a->y) - (c->y-a->y) * (b->x-a->x);
 }
 
+// Returns if x <= 0 if CCW or x >= 0 if CW
+#define TD_CHECK_EDGE(x) ((TD_winding)?((x)>=0):((x)<=0))
+
 // Check pixel for triangle
 TD_FUNC TD_Vec3 TD_triangle_pixel(TD_Vec3* a, TD_Vec3* b, TD_Vec3* c, TD_Vec3 p){
 	float area = TD_edge_function(a,b,c);
 	float w0 = TD_edge_function(b,c,&p);
 	float w1 = TD_edge_function(c,a,&p);
 	float w2 = TD_edge_function(a,b,&p);
-	if(w0 <= 0 && w1 <= 0 && w2 <= 0){
+	if(TD_CHECK_EDGE(w0) && TD_CHECK_EDGE(w1) && TD_CHECK_EDGE(w2)){
 		w0 /= area;
 		w1 /= area;
 		w2 /= area;
@@ -75,7 +78,7 @@ TD_FUNC _Bool TD_is_backface(TD_Vec3* a, TD_Vec3* b, TD_Vec3* c){
 		(a->y+b->y+c->y)/3.f,
 		0.f
 	};
-	return TD_Vec3_cmp(TD_triangle_pixel(a,b,c,middle),TD_Vec3ZERO);
+	return !TD_CHECK_EDGE(TD_edge_function(b,c,&middle));
 }
 
 // Render a single face of a mesh on the screen
@@ -84,6 +87,11 @@ TD_FUNC void TD_render_face(TD_Mesh* m, TD_Face* f, TD_Color (*frag_shader)(TD_S
 	TD_Vec3 a = TD_Transform_apply(&m->transform,&m->vertices[f->a]);
 	TD_Vec3 b = TD_Transform_apply(&m->transform,&m->vertices[f->b]);
 	TD_Vec3 c = TD_Transform_apply(&m->transform,&m->vertices[f->c]);
+	// Apply camera transformation
+	a = TD_Transform_apply(&TD_camera,&a);
+	b = TD_Transform_apply(&TD_camera,&b);
+	c = TD_Transform_apply(&TD_camera,&c);
+	// Apply simple perspective
 	a = TD_simple_perspective(&a);
 	b = TD_simple_perspective(&b);
 	c = TD_simple_perspective(&c);

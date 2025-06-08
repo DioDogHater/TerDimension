@@ -94,6 +94,36 @@ TD_FUNC void TD_set_pixel(int,int,TD_Color);
 TD_FUNC void TD_update_screen(void);
 TD_FUNC void TD_clear_screen(void);
 
+//========== Constants ===========
+
+// Colors
+#define TD_BLACK	(TD_Color){0,0,0}
+#define TD_WHITE	(TD_Color){255,255,255}
+#define TD_RED		(TD_Color){255,0,0}
+#define TD_GREEN	(TD_Color){0,255,0}
+#define TD_BLUE		(TD_Color){0,0,255}
+
+// Vector constants
+#define TD_Vec3ZERO 	(TD_Vec3){0.f,0.f,0.f}
+#define TD_Vec3IDENTITY (TD_Vec3){1.f,1.f,1.f}
+#define TD_Vec3UP 		(TD_Vec3){0.f,1.f,0.f}
+#define TD_Vec3DOWN 	(TD_Vec3){0.f,-1.f,0.f}
+#define TD_Vec3LEFT 	(TD_Vec3){-1.f,0.f,0.f}
+#define TD_Vec3RIGHT 	(TD_Vec3){1.f,0.f,0.f}
+#define TD_Vec3FRONT 	(TD_Vec3){0.f,0.f,1.f}
+#define TD_Vec3BACK 	(TD_Vec3){0.f,0.f,-1.f}
+
+// Default transform
+#define TD_TransformIDENTITY (TD_Transform){TD_Vec3ZERO,TD_Vec3ZERO,TD_Vec3IDENTITY}
+
+// Winding order
+#define TD_CCW 0
+#define TD_CW 1
+
+// Amount of bytes allocated per pixel for stdout buffer
+// 100 bytes per pixel takes about 1-2 MB for most resolutions and works well
+#define TD_STDOUT_BYTES_PER_PIXEL 100
+
 //=========== Globals ============
 
 // Screen width / height
@@ -105,19 +135,17 @@ unsigned int TD_SH = 0;
 unsigned int TD_SW2 = 0;
 unsigned int TD_SH2 = 0;
 
+// Precalculated aspect ratio
+float TD_ASPECT_RATIO = 1.f;
 
-//========== Constants ===========
+// Camera
+TD_Transform TD_camera = TD_TransformIDENTITY;
 
-// Colors
-#define TD_BLACK	(TD_Color){0,0,0}
-#define TD_WHITE	(TD_Color){255,255,255}
-#define TD_RED		(TD_Color){255,0,0}
-#define TD_GREEN	(TD_Color){0,255,0}
-#define TD_BLUE		(TD_Color){0,0,255}
+// Background color
+TD_Color TD_background_color = TD_BLACK;
 
-// Amount of bytes allocated per pixel for stdout buffer
-// 100 bytes per pixel takes about 1-2 MB for most resolutions and works well
-#define TD_STDOUT_BYTES_PER_PIXEL 100
+// Clockwise or Counter-Clockwise
+_Bool TD_winding = TD_CCW;
 
 //=============== Terminal implementation ===================
 #ifdef TD_TERMINAL
@@ -148,12 +176,15 @@ static float* TD_depth_buffer = NULL;
 
 // Initialize the whole library
 // w : Screen Width, h : Screen Height
+// If w or h are odd numbers, there might be rendering problems
 TD_FUNC _Bool TD_init(unsigned int w, unsigned int h){
 	TD_SW = w;	// Set the screen properties
 	TD_SH = h;
 
 	TD_SW2 = w/2;	// Precalculate SW/2
 	TD_SH2 = h/2;	// 				SH/2
+
+	TD_ASPECT_RATIO = (float)TD_SW/(float)TD_SH; // Precalculate aspect ratio
 
 	// Allocate frame buffer
 	if(TD_frame_buffer)
@@ -221,7 +252,7 @@ TD_FUNC void TD_quit(void){
 
 TD_FUNC float TD_sample_depth(int x, int y){
 	if(x < 0 || y < 0 || x >= TD_SW || y >= TD_SH)
-		return 999999.f;
+		return 999.f;
 	return TD_depth_buffer[y*TD_SW+x];
 }
 
@@ -232,16 +263,27 @@ TD_FUNC void TD_set_pixel(int x, int y, TD_Color c){
 }
 
 TD_FUNC void TD_update_screen(void){
-	TD_MOVE_CURSOR(0,0);
+	// Move cursor to top left of screen
+	TD_MOVE_CURSOR(1,1);
+
+	// Pointer to current Upper-Color and Bottom-Color
 	TD_Color *uc = TD_frame_buffer, *bc = TD_frame_buffer+TD_SW;
+
+	// Pointer to current depth buffer pixel
 	float* depth_ptr = TD_depth_buffer;
+
+	// Loop through each pixel pair in the color buffer
 	for(int y = 0; y < TD_SH-1; y += 2){
 		for(int x = 0; x < TD_SW; x++, uc++, bc++, depth_ptr++){
 			TD_COLOR_printchar(uc,bc);
-			*uc = TD_BLACK;
-			*bc = TD_BLACK;
-			*depth_ptr = 100.f;
-			*(depth_ptr+TD_SW) = 100.f;
+
+			// Clear current pixels
+			*uc = TD_background_color;
+			*bc = TD_background_color;
+
+			// Set depth buffer pixels to max distance
+			*depth_ptr = 999.f;
+			*(depth_ptr+TD_SW) = 999.f;
 		}
 		puts(TD_NO_COLORS);
 		uc += TD_SW;
@@ -256,16 +298,23 @@ TD_FUNC void TD_clear_screen(void){
 	printf(TD_CLEAR_TERMINAL);
 }
 
+#elif defined(TD_SDL)
+
+//============ SDL Implementation ===============
+
+#error TD_SDL not implemented yet!
+
+
 #else	// NO IMPLEMENTATION SELECTED -> ERROR
 
 #error Please define either TD_TERMINAL or TD_SDL before including terdimension.h
 
 #endif
 
-//========== Math functions ============
+//========== Math functions ======
 #include "td_math.h"
 
-//========== Rasterization =============
+//========== Rasterization =======
 #include "td_raster.h"
 
 #endif
