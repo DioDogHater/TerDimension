@@ -36,6 +36,9 @@ define one of these macros before including `terdimension.h`.
 	To enable **Full Color (RGB)**, you will need to define `TD_COLOR_RGB`.
 	- Using 4-Bit Color, you can edit `td_color.h` to change the color palette to fit your
 	current terminal, or disable bright colors if your terminal doesn't support them.
+	- This engine uses the upper half block character, which is unicode, but might not be
+	supported on any terminal, which is why you can define `TD_NO_UNICODE` to instead render
+	the scene with half of the resolution, but more support.
 - `TD_SDL` : Renders inside a SDL window. You need to link SDL to your executable for
 this implementation to work. Check out `CMakeLists.txt` and the CMake docs.
 

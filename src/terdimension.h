@@ -75,10 +75,7 @@ typedef struct{
 } TD_Transform;
 
 // 3D camera
-typedef struct{
-	TD_Vec3 position;
-	TD_Vec3 rotation;
-} TD_Camera;
+typedef TD_Transform TD_Camera;
 
 // 3D Model
 typedef struct {
@@ -90,6 +87,19 @@ typedef struct {
 	unsigned int face_count;
 	TD_Transform transform;
 } TD_Mesh;
+
+// Struct containing information given to the fragment shader
+typedef struct{
+	TD_Vec3 bc;
+	TD_Vec3 pos;
+	TD_Color color;
+	//TD_Vec3 normal;	- IMPLEMENTED LATER
+	//TD_Vec3 uv;
+	//TD_... texture
+} TD_ShaderInfo;
+
+// Fragment shader (function)
+typedef TD_Color (*TD_Shader)(TD_ShaderInfo*);
 
 //===== Function prototypes ======
 #define TD_FUNC static inline
@@ -123,7 +133,7 @@ TD_FUNC void TD_clear_screen(void);
 #define TD_TransformIDENTITY (TD_Transform){TD_Vec3ZERO,TD_Vec3ZERO,TD_Vec3IDENTITY}
 
 // Default camera
-#define TD_CameraDEFAULT (TD_Camera){TD_Vec3ZERO,TD_Vec3ZERO}
+#define TD_CameraDEFAULT TD_TransformIDENTITY
 
 // Winding order
 #define TD_CCW 0

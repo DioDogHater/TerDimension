@@ -12,7 +12,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-TD_FUNC void TD_die(const char* msg){
+static void TD_die(const char* msg){
 	perror(msg);
 	exit(EXIT_FAILURE);
 }

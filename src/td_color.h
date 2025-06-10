@@ -18,6 +18,7 @@ TD_FUNC void TD_COLOR_printchar(TD_Color*,TD_Color*);
 
 TD_FUNC void TD_COLOR_printchar(TD_Color* uc, TD_Color* bc){
 	// Change colors and print
+	#ifndef TD_NO_UNICODE
 	printf(
 		TD_SET_FOREGROUND
 		TD_SET_BACKGROUND
@@ -25,6 +26,14 @@ TD_FUNC void TD_COLOR_printchar(TD_Color* uc, TD_Color* bc){
 		uc->r, uc->g, uc->b,
 		bc->r, bc->g, bc->b
 	);
+	#else
+	printf(
+		TD_SET_BACKGROUND " ",
+		(uc->r+bc->r)>>1,
+		(uc->g+bc->g)>>1,
+		(uc->b+bc->b)>>1
+	);
+	#endif
 }
 
 #else
@@ -35,8 +44,8 @@ TD_FUNC void TD_COLOR_printchar(TD_Color* uc, TD_Color* bc){
 // Please check out this image as a reference:
 // https://i.sstatic.net/9UVnC.png
 
-// To disable non-standard bright colors, comment out this line:
-#define TD_ENABLE_BRIGHT_COLORS
+// To disable non-standard bright colors, Uncomment out this line:
+//#define TD_DISABLE_BRIGHT_COLORS
 
 // Macro to enter colors faster
 // (c) : The FG
@@ -58,7 +67,7 @@ static TD_4bit_color TD_4bit_colors[] =
 	TD_COLOR_ENTRY(Magenta,			117,80,123,		35,45),
 	TD_COLOR_ENTRY(Cyan,			6,152,154,		36,46),
 	TD_COLOR_ENTRY(White,			211,215,207,	37,47),
-#ifdef TD_ENABLE_BRIGHT_COLORS
+#ifndef TD_DISABLE_BRIGHT_COLORS
 	TD_COLOR_ENTRY(Grey,			85,87,83,		90,100),
 	TD_COLOR_ENTRY(Bright Red,		239,41,41,		91,101),
 	TD_COLOR_ENTRY(Bright Green,	138,226,52,		92,102),
@@ -70,7 +79,7 @@ static TD_4bit_color TD_4bit_colors[] =
 #endif
 };
 
-#ifdef TD_ENABLE_BRIGHT_COLORS
+#ifndef TD_DISABLE_BRIGHT_COLORS
 #define TD_4bit_colors_count 16
 #else
 #define TD_4bit_colors_count 9
@@ -99,6 +108,7 @@ TD_FUNC TD_4bit_color* TD_COLOR_GET(TD_Color* c){
 
 TD_FUNC void TD_COLOR_printchar(TD_Color* uc, TD_Color* bc){
 	// Change colors and print
+	#ifndef TD_NO_UNICODE
 	printf(
 		TD_SET_FOREGROUND
 		TD_SET_BACKGROUND
@@ -106,6 +116,13 @@ TD_FUNC void TD_COLOR_printchar(TD_Color* uc, TD_Color* bc){
 		TD_COLOR_GET(uc)->fgc,
 		TD_COLOR_GET(bc)->bgc
 	);
+	#else
+	TD_Color c = (TD_Color){(uc->r+bc->r)>>1,(uc->g+bc->g)>>1,(uc->b+bc->b)>>1};
+	printf(
+		TD_SET_BACKGROUND " ",
+		TD_COLOR_GET(&c)->bgc
+	);
+	#endif
 }
 
 #endif

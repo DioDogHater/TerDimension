@@ -138,13 +138,6 @@ TD_FUNC TD_Vec3 TD_Transform_apply(TD_Transform* t, TD_Vec3* v){
 	return TD_Vec3_add(t->position,r);;
 }
 
-TD_FUNC TD_Vec3 TD_Transform_apply_inverse(TD_Transform t, TD_Vec3* v){
-	t.position = TD_Vec3_scale(t.position,-1.f);
-	t.rotation = TD_Vec3_scale(t.rotation,-1.f);
-	t.scale = TD_Vec3_scale(t.scale,-1.f);
-	return TD_Transform_apply(&t,v);
-}
-
 //=========== 3D Rendering Maths =============
 // Camera transformation
 TD_FUNC TD_Vec3 TD_Camera_transform(TD_Vec3* v){

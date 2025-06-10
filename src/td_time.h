@@ -1,8 +1,6 @@
 #ifndef TERDIMENSION_TIME_H
 #define TERDIMENSION_TIME_H
 
-#include "terdimension.h"
-
 #include <sys/time.h>
 
 // Type for ticks

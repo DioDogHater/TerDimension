@@ -4,19 +4,12 @@
 #include "terdimension.h"
 #include "td_math.h"
 
-typedef struct{
-	TD_Vec3 bc;
-	TD_Vec3 pos;
-	TD_Color color;
-	//TD_Vec3 normal;	- IMPLEMENTED LATER
-	//TD_Vec3 uv;
-	//TD_... texture
-} TD_ShaderInfo;
-
+// 2D integer vector
 typedef struct{
 	int x, y;
 } TD_Vec2i;
 
+// 2D bounds (minimum -> maximum)
 typedef struct{
 	int xmin, xmax;
 	int ymin, ymax;
@@ -82,25 +75,38 @@ TD_FUNC _Bool TD_is_backface(TD_Vec3* a, TD_Vec3* b, TD_Vec3* c){
 }
 
 // Render a single face of a mesh on the screen
-TD_FUNC void TD_render_face(TD_Mesh* m, TD_Face* f, TD_Color (*frag_shader)(TD_ShaderInfo*)){
+TD_FUNC void TD_render_face(TD_Mesh* m, TD_Face* f, TD_Shader frag_shader){
 	// 3D transformations
 	TD_Vec3 a = TD_Transform_apply(&m->transform,&m->vertices[f->a]);
 	TD_Vec3 b = TD_Transform_apply(&m->transform,&m->vertices[f->b]);
 	TD_Vec3 c = TD_Transform_apply(&m->transform,&m->vertices[f->c]);
+
 	// Apply camera transformation
 	a = TD_Camera_transform(&a);
 	b = TD_Camera_transform(&b);
 	c = TD_Camera_transform(&c);
+
+	// Cull face if it's completely behind camera
+	if(a.z <= 0.f || b.z <= 0.f || c.z <= 0.f)
+		return;
+
 	// Apply simple perspective
 	a = TD_simple_perspective(&a);
 	b = TD_simple_perspective(&b);
 	c = TD_simple_perspective(&c);
 
 	// Backface culling
-	if(TD_is_backface(&a,&b,&c)) return;
+	if(TD_is_backface(&a,&b,&c))
+		return;
 
 	// Rasterization step
 	TD_Bounds bounds = TD_triangle_bounds(TD_to_screen(&a),TD_to_screen(&b),TD_to_screen(&c));
+
+	// If the bounding rect is not valid, dont render
+	if(bounds.xmax - bounds.xmin <= 0 || bounds.ymax - bounds.ymin <= 0)
+		return;
+
+	// Parse through each pixel where the triangle should be
 	for(int y = bounds.ymin; y < bounds.ymax; y++){
 		for(int x = bounds.xmin; x < bounds.xmax; x++){
 			// Create the info for our shader
@@ -131,7 +137,7 @@ TD_FUNC void TD_render_face(TD_Mesh* m, TD_Face* f, TD_Color (*frag_shader)(TD_S
 	}
 }
 
-TD_FUNC void TD_render_mesh(TD_Mesh* m, TD_Color (*frag_shader)(TD_ShaderInfo*)){
+TD_FUNC void TD_render_mesh(TD_Mesh* m, TD_Shader frag_shader){
 	if(m->faces == NULL || m->face_count == 0 || m->vertices == NULL) return;
 	for(int i = 0; i < m->face_count; i++){
 		TD_render_face(m,&m->faces[i],frag_shader);

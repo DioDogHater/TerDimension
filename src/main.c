@@ -8,6 +8,11 @@
 // Comment out this line to disable RGB (if color doesn't work)
 #define TD_COLOR_RGB
 
+// To remove unicode characters (top half block characater)
+// uncomment this following line
+// (BTW this will also speed up the program)
+//#define TD_NO_UNICODE
+
 // To remove input detection, uncomment this following line
 //#define TD_DISABLE_INPUT
 
@@ -62,7 +67,11 @@ TD_Mesh cube_mesh = (TD_Mesh){
 		{6,4,2}
 	},
 	12,
-	TD_TransformIDENTITY
+	(TD_Transform){
+		(TD_Vec3){0.f,0.f,5.f},
+		TD_Vec3ZERO,
+		TD_Vec3IDENTITY
+	}
 };
 
 int main(void){
@@ -74,9 +83,6 @@ int main(void){
 	// Time variables
 	TD_time_t last_frame = TD_get_ticks();
 	float deltaTime = 0.f, FPS = 1.f;
-
-	// Used for sine waves
-	float time = 0.f;
 
 	TD_clear_screen();
 
@@ -91,11 +97,8 @@ int main(void){
 		cube_mesh.transform.rotation.y += 3.5f*deltaTime;
 		cube_mesh.transform.rotation.x += 4.f*deltaTime;
 
-		// Translate it
-		cube_mesh.transform.position.z = sin(time)*2.5f+5.f;
-		cube_mesh.transform.position.x = cos(time);
-
 		// Handle input
+		// If you wish to disable input, please omit this part of the code
 		#define PLAYER_SPEED 4.f
 		char c;
 		while(TD_get_input(&c)){
@@ -134,9 +137,6 @@ int main(void){
 				break;
 			}
 		}
-
-		// Advance time
-		time += deltaTime;
 
 		// Update the FPS counter and deltaTime
 		deltaTime = TD_get_deltaTime(&last_frame);
