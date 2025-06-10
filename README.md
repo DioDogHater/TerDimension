@@ -44,8 +44,8 @@ winding or `TD_CCW` for counter-clockwise.
 
 # Limitations and specifications
 This library supports only triangles, so you will need to triangulate your meshes before
-importing them. This 3D engine also uses the Z+ axis as the front axis. The camera is
-`TD_camera` and is in reality a `TD_Transform`. This engine also supports different aspect
+importing them. This 3D engine also uses the Z+ axis as the front axis. The camera is a global variable
+called `TD_camera` in `terdimension.h`. This engine also supports different aspect
 ratios and scales the output accordingly. Screen dimensions cannot be odd numbers, due to the fact
 that each character on screen represents 2 pixels on top of each other.
 

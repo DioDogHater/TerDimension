@@ -88,9 +88,9 @@ TD_FUNC void TD_render_face(TD_Mesh* m, TD_Face* f, TD_Color (*frag_shader)(TD_S
 	TD_Vec3 b = TD_Transform_apply(&m->transform,&m->vertices[f->b]);
 	TD_Vec3 c = TD_Transform_apply(&m->transform,&m->vertices[f->c]);
 	// Apply camera transformation
-	a = TD_Transform_apply(&TD_camera,&a);
-	b = TD_Transform_apply(&TD_camera,&b);
-	c = TD_Transform_apply(&TD_camera,&c);
+	a = TD_Camera_transform(&a);
+	b = TD_Camera_transform(&b);
+	c = TD_Camera_transform(&c);
 	// Apply simple perspective
 	a = TD_simple_perspective(&a);
 	b = TD_simple_perspective(&b);

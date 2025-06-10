@@ -57,32 +57,32 @@ TD_FUNC TD_Color TD_Color_interpolate(TD_Color* a, TD_Color* b, TD_Color* c, TD_
 //============ Transform ==============
 
 // Apply rotation to Vec3 in order ZYX
-TD_FUNC TD_Vec3 TD_Transform_rotationZYX(TD_Transform* t, TD_Vec3* v){
+TD_FUNC TD_Vec3 TD_Vec3_rotationZYX(TD_Vec3* rot, TD_Vec3* v){
 	TD_Vec3 r = *v;
 	float tcos = 0.f, tsin = 0.f;
 
 	// Z rotation
-	if(t->rotation.z != 0.f){
-		tcos = cos(t->rotation.z);
-		tsin = sin(t->rotation.z);
+	if(rot->z != 0.f){
+		tcos = cos(rot->z);
+		tsin = sin(rot->z);
 		float tmp = r.x * tcos - r.y * tsin;
 		r.y =		r.x * tsin + r.y * tcos;
 		r.x = tmp;
 	}
 
 	// Y rotation
-	if(t->rotation.y != 0.f){
-		tcos = cos(t->rotation.y);
-		tsin = sin(t->rotation.y);
+	if(rot->y != 0.f){
+		tcos = cos(rot->y);
+		tsin = sin(rot->y);
 		float tmp = r.x * tcos - r.z * tsin;
 		r.z =		r.x * tsin + r.z * tcos;
 		r.x = tmp;
 	}
 
 	// X rotation
-	if(t->rotation.x != 0.f){
-		tcos = cos(t->rotation.x);
-		tsin = sin(t->rotation.x);
+	if(rot->x != 0.f){
+		tcos = cos(rot->x);
+		tsin = sin(rot->x);
 		float tmp = r.y * tcos - r.z * tsin;
 		r.z =		r.y * tsin + r.z * tcos;
 		r.y = tmp;
@@ -92,18 +92,66 @@ TD_FUNC TD_Vec3 TD_Transform_rotationZYX(TD_Transform* t, TD_Vec3* v){
 	return r;
 }
 
-TD_FUNC TD_Vec3 TD_Transform_scale(TD_Transform* t, TD_Vec3* v){
-	return (TD_Vec3){v->x*t->scale.x,v->y*t->scale.y,v->z*t->scale.z};
+TD_FUNC TD_Vec3 TD_Vec3_rotationXYZ(TD_Vec3* rot, TD_Vec3* v){
+	TD_Vec3 r = *v;
+	float tcos = 0.f, tsin = 0.f;
+
+	// X rotation
+	if(rot->x != 0.f){
+		tcos = cos(rot->x);
+		tsin = sin(rot->x);
+		float tmp = r.y * tcos - r.z * tsin;
+		r.z =		r.y * tsin + r.z * tcos;
+		r.y = tmp;
+	}
+
+	// Y rotation
+	if(rot->y != 0.f){
+		tcos = cos(rot->y);
+		tsin = sin(rot->y);
+		float tmp = r.x * tcos - r.z * tsin;
+		r.z =		r.x * tsin + r.z * tcos;
+		r.x = tmp;
+	}
+
+	// Z rotation
+	if(rot->z != 0.f){
+		tcos = cos(rot->z);
+		tsin = sin(rot->z);
+		float tmp = r.x * tcos - r.y * tsin;
+		r.y =		r.x * tsin + r.y * tcos;
+		r.x = tmp;
+	}
+
+	// Return the result
+	return r;
+
+}
+
+TD_FUNC TD_Vec3 TD_Transform_scale(TD_Vec3* s, TD_Vec3* v){
+	return (TD_Vec3){v->x*s->x,v->y*s->y,v->z*s->z};
 }
 
 TD_FUNC TD_Vec3 TD_Transform_apply(TD_Transform* t, TD_Vec3* v){
-	TD_Vec3 r = TD_Transform_scale(t,v);
-	r = TD_Transform_rotationZYX(t,&r);
-	r = TD_Vec3_add(t->position,r);
-	return r;
+	TD_Vec3 r = TD_Transform_scale(&t->scale,v);
+	r = TD_Vec3_rotationZYX(&t->rotation,&r);
+	return TD_Vec3_add(t->position,r);;
 }
 
-//=========== 3D Maths =============
+TD_FUNC TD_Vec3 TD_Transform_apply_inverse(TD_Transform t, TD_Vec3* v){
+	t.position = TD_Vec3_scale(t.position,-1.f);
+	t.rotation = TD_Vec3_scale(t.rotation,-1.f);
+	t.scale = TD_Vec3_scale(t.scale,-1.f);
+	return TD_Transform_apply(&t,v);
+}
+
+//=========== 3D Rendering Maths =============
+// Camera transformation
+TD_FUNC TD_Vec3 TD_Camera_transform(TD_Vec3* v){
+	TD_Vec3 r = TD_Vec3_sub(*v,TD_camera.position);
+	return TD_Vec3_rotationXYZ(&TD_camera.rotation,&r);
+}
+
 // Simple perspective
 TD_FUNC TD_Vec3 TD_simple_perspective(TD_Vec3* v){
 	if(v->z <= 0) return *v;

@@ -8,6 +8,9 @@
 // Comment out this line to disable RGB (if color doesn't work)
 #define TD_COLOR_RGB
 
+// To remove input detection, uncomment this following line
+//#define TD_DISABLE_INPUT
+
 #include "terdimension.h"
 #include "td_time.h"
 
@@ -91,6 +94,46 @@ int main(void){
 		// Translate it
 		cube_mesh.transform.position.z = sin(time)*2.5f+5.f;
 		cube_mesh.transform.position.x = cos(time);
+
+		// Handle input
+		#define PLAYER_SPEED 4.f
+		char c;
+		while(TD_get_input(&c)){
+			switch(c){
+			case TD_CTRL_C:
+				exit(0);
+			case 'w':
+				TD_camera.position.z += PLAYER_SPEED*deltaTime;
+				break;
+			case 's':
+				TD_camera.position.z -= PLAYER_SPEED*deltaTime;
+				break;
+			case 'a':
+				TD_camera.position.x -= PLAYER_SPEED*deltaTime;
+				break;
+			case 'd':
+				TD_camera.position.x += PLAYER_SPEED*deltaTime;
+				break;
+			case 'e':
+				TD_camera.position.y += PLAYER_SPEED*deltaTime;
+				break;
+			case 'q':
+				TD_camera.position.y -= PLAYER_SPEED*deltaTime;
+				break;
+			case 'i':
+				TD_camera.rotation.x += deltaTime;
+				break;
+			case 'k':
+				TD_camera.rotation.x -= deltaTime;
+				break;
+			case 'j':
+				TD_camera.rotation.y -= deltaTime;
+				break;
+			case 'l':
+				TD_camera.rotation.y += deltaTime;
+				break;
+			}
+		}
 
 		// Advance time
 		time += deltaTime;

@@ -1,6 +1,9 @@
 #ifndef TERDIMENSION_H
 #define TERDIMENSION_H
 
+#include <stdio.h>
+#include <stdlib.h>
+
 // This library will have this prefix in all names
 // TD_*
 
@@ -14,13 +17,11 @@ TD_SDL :
 
 // Memory allocation macro (can be overwritten before including this header)
 #ifndef TD_MALLOC
-#include <stdlib.h>
 #define TD_MALLOC(sz) malloc((sz))
 #endif
 
 // Memory freeing macro (can be overwritten before including this header)
 #ifndef TD_FREE
-#include <stdlib.h>
 #define TD_FREE(ptr) free((ptr))
 #endif
 
@@ -32,7 +33,6 @@ TD_SDL :
 
 // Logging macro (prints by default)
 #ifndef TD_LOG
-#include <stdio.h>
 #define TD_LOG(fmt,...) printf("TD_LOG: " fmt,##__VA_ARGS__);
 #endif
 
@@ -73,6 +73,12 @@ typedef struct{
 	TD_Vec3 rotation;
 	TD_Vec3 scale;
 } TD_Transform;
+
+// 3D camera
+typedef struct{
+	TD_Vec3 position;
+	TD_Vec3 rotation;
+} TD_Camera;
 
 // 3D Model
 typedef struct {
@@ -116,6 +122,9 @@ TD_FUNC void TD_clear_screen(void);
 // Default transform
 #define TD_TransformIDENTITY (TD_Transform){TD_Vec3ZERO,TD_Vec3ZERO,TD_Vec3IDENTITY}
 
+// Default camera
+#define TD_CameraDEFAULT (TD_Camera){TD_Vec3ZERO,TD_Vec3ZERO}
+
 // Winding order
 #define TD_CCW 0
 #define TD_CW 1
@@ -139,7 +148,7 @@ unsigned int TD_SH2 = 0;
 float TD_ASPECT_RATIO = 1.f;
 
 // Camera
-TD_Transform TD_camera = TD_TransformIDENTITY;
+TD_Camera TD_camera = TD_CameraDEFAULT;
 
 // Background color
 TD_Color TD_background_color = TD_BLACK;
@@ -159,6 +168,7 @@ _Bool TD_winding = TD_CCW;
 
 // Macros for rendering
 #define TD_MOVE_CURSOR(x,y) printf("\033[%d;%dH", (y), (x))
+TD_FUNC void  TD_clear_screen() { printf(TD_CLEAR_TERMINAL); }
 
 // Include the terminal color header
 #include "td_color.h"
@@ -173,6 +183,9 @@ static TD_Color* TD_frame_buffer = NULL;
 // Depth buffer
 // Private to avoid memory insecurity
 static float* TD_depth_buffer = NULL;
+
+// Input handling
+#include "td_input.h"
 
 // Initialize the whole library
 // w : Screen Width, h : Screen Height
@@ -230,24 +243,45 @@ TD_FUNC _Bool TD_init(unsigned int w, unsigned int h){
 	// Hide cursor
 	printf(TD_HIDE_CURSOR);
 
+	// Register TD_quit as a function to run when program exits
+	atexit(TD_quit);
+
+	// Initialize input (or not input)
+	TD_INPUT_INIT();
+
 	// Return "success"
 	return 1;
 }
 
 TD_FUNC void TD_quit(void){
+	// Quit input
+	TD_INPUT_QUIT();
+
+	// Clear the terminal
+	printf(TD_NO_COLORS TD_CLEAR_TERMINAL);
+
+	// Make cursor visible again
+	printf(TD_SHOW_CURSOR);
+
+	// Flush stdout one last time
+	fflush(stdout);
+
+	// Set stdout's buffering to be line buffering
+	setvbuf(stdout,NULL,_IOLBF,0);
+
 	TD_SW = 0;	// Set the screen to be 0x0 px
 	TD_SH = 0;
 
 	// Free the buffers
 	if(TD_frame_buffer)
 		TD_FREE(TD_frame_buffer);
+	TD_frame_buffer = NULL;
 	if(TD_depth_buffer)
 		TD_FREE(TD_depth_buffer);
+	TD_depth_buffer = NULL;
 	if(TD_STDOUT_BUFFER)
 		TD_FREE(TD_STDOUT_BUFFER);
-
-	// Make cursor visible again
-	printf(TD_SHOW_CURSOR);
+	TD_STDOUT_BUFFER = NULL;
 }
 
 TD_FUNC float TD_sample_depth(int x, int y){
@@ -292,10 +326,6 @@ TD_FUNC void TD_update_screen(void){
 	}
 	// Flush the buffer into stdout
 	fflush(stdout);
-}
-
-TD_FUNC void TD_clear_screen(void){
-	printf(TD_CLEAR_TERMINAL);
 }
 
 #elif defined(TD_SDL)
