@@ -5,6 +5,11 @@
 // Render in the terminal
 #define TD_TERMINAL
 
+// Uncomment this following line if you want to render without color
+// Also speeds up the program, so fast that input needs to be adjusted
+// I recommend doubling the speed of all input interactions
+//#define TD_NO_COLOR
+
 // Comment out this line to disable RGB (if color doesn't work)
 #define TD_COLOR_RGB
 
@@ -100,6 +105,7 @@ int main(void){
 		// Handle input
 		// If you wish to disable input, please omit this part of the code
 		#define PLAYER_SPEED 4.f
+		#define PLAYER_LOOK 2.f
 		char c;
 		while(TD_get_input(&c)){
 			switch(c){
@@ -124,16 +130,16 @@ int main(void){
 				TD_camera.position.y -= PLAYER_SPEED*deltaTime;
 				break;
 			case 'i':
-				TD_camera.rotation.x += deltaTime;
+				TD_camera.rotation.x += PLAYER_LOOK*deltaTime;
 				break;
 			case 'k':
-				TD_camera.rotation.x -= deltaTime;
+				TD_camera.rotation.x -= PLAYER_LOOK*deltaTime;
 				break;
 			case 'j':
-				TD_camera.rotation.y -= deltaTime;
+				TD_camera.rotation.y -= PLAYER_LOOK*deltaTime;
 				break;
 			case 'l':
-				TD_camera.rotation.y += deltaTime;
+				TD_camera.rotation.y += PLAYER_LOOK*deltaTime;
 				break;
 			}
 		}
@@ -141,7 +147,7 @@ int main(void){
 		// Update the FPS counter and deltaTime
 		deltaTime = TD_get_deltaTime(&last_frame);
 		FPS = TD_GET_FPS(deltaTime);
-		printf("%.f  \n",FPS);
+		printf("%.f   %g    \n",FPS,deltaTime);
 	}
 
 	TD_quit();
