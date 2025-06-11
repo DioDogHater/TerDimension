@@ -135,7 +135,7 @@ TD_FUNC TD_Vec3 TD_Transform_scale(TD_Vec3* s, TD_Vec3* v){
 TD_FUNC TD_Vec3 TD_Transform_apply(TD_Transform* t, TD_Vec3* v){
 	TD_Vec3 r = TD_Transform_scale(&t->scale,v);
 	r = TD_Vec3_rotationZYX(&t->rotation,&r);
-	return TD_Vec3_add(t->position,r);;
+	return TD_Vec3_add(t->position,r);
 }
 
 //=========== 3D Rendering Maths =============

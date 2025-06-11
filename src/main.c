@@ -24,9 +24,16 @@
 #include "terdimension.h"
 #include "td_time.h"
 
+// Light source
+#define LIGHT_SOURCE (TD_Vec3){10.f,10.f,-10.f}
+#define DIFFUSE 0.8f
+#define AMBIENT 0.2f
+
 // Fragment shader
 TD_Color test_shader(TD_ShaderInfo* si){
-	return si->color;
+	TD_Vec3 light_dir = TD_Vec3_normalize(TD_Vec3_sub(LIGHT_SOURCE,si->pos));
+	float diffuse = TD_MAX(TD_Vec3_dot(TD_Vec3_normalize(si->normal),light_dir),0.f);
+	return (TD_Color){(DIFFUSE*diffuse+AMBIENT)*si->color.r,(DIFFUSE*diffuse+AMBIENT)*si->color.g,(DIFFUSE*diffuse+AMBIENT)*si->color.b};
 }
 
 // Hard coded cube mesh
@@ -45,31 +52,37 @@ TD_Mesh cube_mesh = (TD_Mesh){
 		TD_RED,
 		TD_BLUE,
 		TD_GREEN,
-		TD_WHITE,
-		TD_BLUE,
-		TD_RED,
-		TD_WHITE,
-		TD_GREEN,
+		TD_WHITE
 	},
+	(TD_Vec3[]){
+		TD_Vec3BACK,
+		TD_Vec3FRONT,
+		TD_Vec3LEFT,
+		TD_Vec3RIGHT,
+		TD_Vec3UP,
+		TD_Vec3DOWN
+	},
+	// v = vertex index, c = color / uv index
+	// {v1,v2,v3, c1,c2,c3, normal index}
 	(TD_Face[]){
-		// Front
-		{2,1,0},
-		{2,3,1},
 		// Back
-		{6,5,4},
-		{6,7,5},
+		{2,1,0, 2,1,0, 0},
+		{2,3,1, 2,3,1, 0},
+		// Front
+		{6,5,4, 3,0,1, 1},
+		{6,7,5, 3,2,0, 1},
 		// Left
-		{0,1,6},
-		{7,6,1},
+		{0,1,6, 0,1,3, 2},
+		{7,6,1, 2,3,1, 2},
 		// Right
-		{4,3,2},
-		{5,3,4},
+		{4,3,2, 1,3,2, 3},
+		{5,3,4, 0,3,1, 3},
 		// Top
-		{3,7,1},
-		{3,5,7},
+		{3,7,1, 3,2,1, 4},
+		{3,5,7, 3,0,2, 4},
 		// Bottom
-		{0,6,2},
-		{6,4,2}
+		{0,6,2, 0,3,2, 5},
+		{6,4,2, 3,1,2, 5}
 	},
 	12,
 	(TD_Transform){
@@ -124,10 +137,10 @@ int main(void){
 			case 'd':
 				movement_vector.x += PLAYER_SPEED*deltaTime;
 				break;
-			case 'e':
+			case ' ':
 				movement_vector.y += PLAYER_SPEED*deltaTime;
 				break;
-			case 'q':
+			case 'c':
 				movement_vector.y -= PLAYER_SPEED*deltaTime;
 				break;
 			case 'i':
@@ -145,7 +158,8 @@ int main(void){
 			}
 		}
 		
-		TD_Vec3 inverse_camera_rotation = TD_Vec3_scale(TD_camera.rotation,-1.f);
+		// Applies movement
+		TD_Vec3 inverse_camera_rotation = (TD_Vec3){0.f,-TD_camera.rotation.y,0.f};
 		movement_vector = TD_Vec3_rotationZYX(&inverse_camera_rotation,&movement_vector);
 		TD_camera.position = TD_Vec3_add(TD_camera.position,movement_vector);
 

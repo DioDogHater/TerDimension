@@ -122,9 +122,11 @@ TD_FUNC void TD_render_face(TD_Mesh* m, TD_Face* f, TD_Shader frag_shader){
 
 				// Only render pixel if the depth is lesser than the one in depth buffer
 				if(si.pos.z >= 0.f && TD_sample_depth(x,y) > si.pos.z){
-					// Interpolated other data
-					if(m->colors)
-						si.color = TD_Color_interpolate(&m->colors[f->a],&m->colors[f->b],&m->colors[f->c],&si.bc);
+					// Interpolated color (if there is color)
+					if(f->d >= 0 && f->e >= 0 && f->f >= 0 && m->colors)
+						si.color = TD_Color_interpolate(&m->colors[f->d],&m->colors[f->e],&m->colors[f->f],&si.bc);
+					if(f->normal >= 0 && m->normals)
+						si.normal = TD_Vec3_rotationZYX(&m->transform.rotation,&m->normals[f->normal]);
 
 					// Fragment shader
 					if(frag_shader){

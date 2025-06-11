@@ -141,7 +141,7 @@ TD_FUNC void TD_COLOR_printchar(TD_Color* uc, TD_Color* bc){
 
 // No color implementation
 
-static unsigned char TD_densities[] = " `.-':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4VpOGbUAKXHm8RD#$Bg0MNWQ%&@";
+static unsigned char TD_densities[] = " ````...--':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4V";
 #define TD_densities_count (sizeof(TD_densities)/sizeof(unsigned char))
 
 TD_FUNC void TD_COLOR_printchar(TD_Color* uc, TD_Color* bc){

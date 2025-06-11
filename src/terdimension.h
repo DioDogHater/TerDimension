@@ -57,8 +57,9 @@ typedef struct {
 
 // Triangle face
 typedef struct {
-	unsigned int a, b, c;	// Indices of vertex, uv, color in the model
-	//int normal;			// Index of the normal vector in the model
+	unsigned int a, b, c;	// Indices of vertices
+	unsigned int d, e, f;	// Indices of colors / uvs
+	unsigned int normal;	// Index of the normal vector in the model
 } TD_Face;
 
 // Colors
@@ -81,8 +82,9 @@ typedef TD_Transform TD_Camera;
 typedef struct {
 	TD_Vec3* vertices;
 	TD_Color* colors;
-	//TD_Vec3* normals;		- IMPLEMENTED LATER
+	TD_Vec3* normals;
 	//TD_Vec3* uvs;
+	//TD_Texture* texture;
 	TD_Face* faces;
 	unsigned int face_count;
 	TD_Transform transform;
@@ -93,9 +95,9 @@ typedef struct{
 	TD_Vec3 bc;
 	TD_Vec3 pos;
 	TD_Color color;
-	//TD_Vec3 normal;	- IMPLEMENTED LATER
+	TD_Vec3 normal;
 	//TD_Vec3 uv;
-	//TD_... texture
+	//TD_Texture* texture;
 } TD_ShaderInfo;
 
 // Fragment shader (function)
