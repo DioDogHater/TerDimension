@@ -36,9 +36,9 @@ TD_FUNC TD_Vec3 TD_Vec3_normalize(TD_Vec3 v){
 TD_FUNC _Bool TD_Vec3_cmp(TD_Vec3 a, TD_Vec3 b){
 	return (a.x == b.x && a.y == b.y && a.z == b.z);
 }
-TD_FUNC void TD_Vec3_print(TD_Vec3 v){
-	printf("%g, %g, %g\n",v.x,v.y,v.z);
-}
+
+#define TD_Vec3_print(c,v) printf(c "%g, %g, %g\n",v.x,v.y,v.z)
+
 TD_FUNC TD_Vec3 TD_Vec3_interpolate(TD_Vec3* a, TD_Vec3* b, TD_Vec3* c, TD_Vec3* bc){
 	return (TD_Vec3){
 		a->x*bc->x+b->x*bc->y+c->x*bc->z,
@@ -142,7 +142,7 @@ TD_FUNC TD_Vec3 TD_Transform_apply(TD_Transform* t, TD_Vec3* v){
 // Camera transformation
 TD_FUNC TD_Vec3 TD_Camera_transform(TD_Vec3* v){
 	TD_Vec3 r = TD_Vec3_sub(*v,TD_camera.position);
-	return TD_Vec3_rotationXYZ(&TD_camera.rotation,&r);
+	return TD_Vec3_rotationZYX(&TD_camera.rotation,&r);
 }
 
 // Simple perspective

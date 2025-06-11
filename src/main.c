@@ -7,7 +7,7 @@
 
 // Uncomment this following line if you want to render without color
 // Also speeds up the program, so fast that input needs to be adjusted
-// I recommend doubling the speed of all input interactions
+// I recommend quadrupling the speed of all input interactions
 //#define TD_NO_COLOR
 
 // Comment out this line to disable RGB (if color doesn't work)
@@ -107,27 +107,28 @@ int main(void){
 		#define PLAYER_SPEED 4.f
 		#define PLAYER_LOOK 2.f
 		char c;
+		TD_Vec3 movement_vector = TD_Vec3ZERO;
 		while(TD_get_input(&c)){
 			switch(c){
 			case TD_CTRL_C:
 				exit(0);
 			case 'w':
-				TD_camera.position.z += PLAYER_SPEED*deltaTime;
+				movement_vector.z = PLAYER_SPEED*deltaTime;
 				break;
 			case 's':
-				TD_camera.position.z -= PLAYER_SPEED*deltaTime;
+				movement_vector.z -= PLAYER_SPEED*deltaTime;
 				break;
 			case 'a':
-				TD_camera.position.x -= PLAYER_SPEED*deltaTime;
+				movement_vector.x -= PLAYER_SPEED*deltaTime;
 				break;
 			case 'd':
-				TD_camera.position.x += PLAYER_SPEED*deltaTime;
+				movement_vector.x += PLAYER_SPEED*deltaTime;
 				break;
 			case 'e':
-				TD_camera.position.y += PLAYER_SPEED*deltaTime;
+				movement_vector.y += PLAYER_SPEED*deltaTime;
 				break;
 			case 'q':
-				TD_camera.position.y -= PLAYER_SPEED*deltaTime;
+				movement_vector.y -= PLAYER_SPEED*deltaTime;
 				break;
 			case 'i':
 				TD_camera.rotation.x += PLAYER_LOOK*deltaTime;
@@ -143,11 +144,17 @@ int main(void){
 				break;
 			}
 		}
+		
+		TD_Vec3 inverse_camera_rotation = TD_Vec3_scale(TD_camera.rotation,-1.f);
+		movement_vector = TD_Vec3_rotationZYX(&inverse_camera_rotation,&movement_vector);
+		TD_camera.position = TD_Vec3_add(TD_camera.position,movement_vector);
 
 		// Update the FPS counter and deltaTime
 		deltaTime = TD_get_deltaTime(&last_frame);
 		FPS = TD_GET_FPS(deltaTime);
-		printf("%.f   %g    \n",FPS,deltaTime);
+		printf("FPS: %.f   \n",FPS);
+		TD_Vec3_print("pos: ",TD_camera.position);
+		TD_Vec3_print("rot: ",TD_Vec3_scale(TD_camera.rotation,180/3.1415f));
 	}
 
 	TD_quit();
