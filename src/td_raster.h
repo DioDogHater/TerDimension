@@ -75,7 +75,7 @@ TD_FUNC _Bool TD_is_backface(TD_Vec3* a, TD_Vec3* b, TD_Vec3* c){
 }
 
 // Render a single face of a mesh on the screen
-TD_FUNC void TD_render_face(TD_Mesh* m, TD_Face* f, TD_Shader frag_shader){
+TD_FUNC void TD_render_face(TD_Mesh* m, TD_Face* f){
 	// 3D transformations
 	TD_Vec3 a = TD_Transform_apply(&m->transform,&m->vertices[f->a]);
 	TD_Vec3 b = TD_Transform_apply(&m->transform,&m->vertices[f->b]);
@@ -129,8 +129,8 @@ TD_FUNC void TD_render_face(TD_Mesh* m, TD_Face* f, TD_Shader frag_shader){
 						si.normal = TD_Vec3_rotationZYX(&m->transform.rotation,&m->normals[f->normal]);
 
 					// Fragment shader
-					if(frag_shader){
-						TD_set_pixel(x,y,frag_shader(&si));
+					if(TD_shader){
+						TD_set_pixel(x,y,TD_shader(&si));
 					}else
 						TD_set_pixel(x,y,(TD_Color){255*si.bc.x,255*si.bc.y,255*si.bc.z});
 				}
@@ -139,10 +139,10 @@ TD_FUNC void TD_render_face(TD_Mesh* m, TD_Face* f, TD_Shader frag_shader){
 	}
 }
 
-TD_FUNC void TD_render_mesh(TD_Mesh* m, TD_Shader frag_shader){
+TD_FUNC void TD_render_mesh(TD_Mesh* m){
 	if(m->faces == NULL || m->face_count == 0 || m->vertices == NULL) return;
 	for(int i = 0; i < m->face_count; i++){
-		TD_render_face(m,&m->faces[i],frag_shader);
+		TD_render_face(m,&m->faces[i]);
 	}
 }
 

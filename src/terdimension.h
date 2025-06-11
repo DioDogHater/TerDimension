@@ -168,6 +168,10 @@ TD_Color TD_background_color = TD_BLACK;
 // Clockwise or Counter-Clockwise
 _Bool TD_winding = TD_CCW;
 
+// Current fragment shader used
+TD_Shader TD_shader = NULL;
+#define TD_use_shader(f) TD_shader = (f)
+
 //=============== Terminal implementation ===================
 #ifdef TD_TERMINAL
 

@@ -106,7 +106,8 @@ int main(void){
 
 	while(1){
 		// Render the cube on screen
-		TD_render_mesh(&cube_mesh,test_shader);
+		TD_use_shader(test_shader);
+		TD_render_mesh(&cube_mesh);
 
 		// Display changes + Clear buffers
 		TD_update_screen();
