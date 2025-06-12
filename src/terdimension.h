@@ -55,6 +55,10 @@ typedef struct {
 	float x, y, z;
 } TD_Vec3;
 
+typedef struct {
+	float x, y;
+} TD_Vec2;
+
 // Triangle face
 typedef struct {
 	unsigned int a, b, c;	// Indices of vertices
@@ -78,13 +82,19 @@ typedef struct{
 // 3D camera
 typedef TD_Transform TD_Camera;
 
+// Texture
+typedef struct{
+	unsigned int width, height;
+	TD_Color* pixels;
+} TD_Texture;
+
 // 3D Model
 typedef struct {
 	TD_Vec3* vertices;
 	TD_Color* colors;
 	TD_Vec3* normals;
-	//TD_Vec3* uvs;
-	//TD_Texture* texture;
+	TD_Vec2* uvs;
+	TD_Texture* texture;
 	TD_Face* faces;
 	unsigned int face_count;
 	TD_Transform transform;
@@ -96,8 +106,8 @@ typedef struct{
 	TD_Vec3 pos;
 	TD_Color color;
 	TD_Vec3 normal;
-	//TD_Vec3 uv;
-	//TD_Texture* texture;
+	TD_Vec2 uv;
+	TD_Texture* texture;
 } TD_ShaderInfo;
 
 // Fragment shader (function)
@@ -121,7 +131,7 @@ TD_FUNC void TD_clear_screen(void);
 #define TD_GREEN	(TD_Color){0,255,0}
 #define TD_BLUE		(TD_Color){0,0,255}
 
-// Vector constants
+// Vector3 constants
 #define TD_Vec3ZERO 	(TD_Vec3){0.f,0.f,0.f}
 #define TD_Vec3IDENTITY (TD_Vec3){1.f,1.f,1.f}
 #define TD_Vec3UP 		(TD_Vec3){0.f,1.f,0.f}
@@ -131,11 +141,22 @@ TD_FUNC void TD_clear_screen(void);
 #define TD_Vec3FRONT 	(TD_Vec3){0.f,0.f,1.f}
 #define TD_Vec3BACK 	(TD_Vec3){0.f,0.f,-1.f}
 
+// Vector2 constants
+#define TD_Vec2ZERO		(TD_Vec2){0.f,0.f}
+#define TD_Vec2IDENTITY	(TD_Vec2){1.f,1.f}
+#define TD_Vec2UP		(TD_Vec2){0.f,1.f}
+#define TD_Vec2DOWN		(TD_Vec2){0.f,-1.f}
+#define TD_Vec2LEFT		(TD_Vec2){-1.f,0.f}
+#define TD_Vec2RIGHT	(TD_Vec2){1.f,0.f}
+
 // Default transform
 #define TD_TransformIDENTITY (TD_Transform){TD_Vec3ZERO,TD_Vec3ZERO,TD_Vec3IDENTITY}
 
 // Default camera
 #define TD_CameraDEFAULT TD_TransformIDENTITY
+
+// Empty texture
+#define TD_TextureEMPTY (TD_Texture){0,0,NULL}
 
 // Winding order
 #define TD_CCW 0
@@ -177,7 +198,7 @@ TD_Shader TD_shader = NULL;
 
 // Constants for rendering
 #define TD_TOP_HALF_BLOCK	"\u2580"
-#define TD_NO_COLORS		"\033[0m"
+#define TD_CLEAR_COLOR		"\033[0m"
 #define TD_CLEAR_TERMINAL	"\e[1;1H\e[2J"
 #define TD_HIDE_CURSOR		"\e[?25l"
 #define TD_SHOW_CURSOR		"\e[?25h"
@@ -199,6 +220,11 @@ static TD_Color* TD_frame_buffer = NULL;
 // Depth buffer
 // Private to avoid memory insecurity
 static float* TD_depth_buffer = NULL;
+
+// Texture handling
+#ifndef TD_NO_TEXTURE
+#include "td_texture.h"
+#endif
 
 // Input handling
 #include "td_input.h"
@@ -274,7 +300,7 @@ TD_FUNC void TD_quit(void){
 	TD_INPUT_QUIT();
 
 	// Clear the terminal
-	printf(TD_NO_COLORS TD_CLEAR_TERMINAL);
+	printf(TD_CLEAR_COLOR TD_CLEAR_TERMINAL);
 
 	// Make cursor visible again
 	printf(TD_SHOW_CURSOR);
@@ -302,7 +328,7 @@ TD_FUNC void TD_quit(void){
 
 TD_FUNC float TD_sample_depth(int x, int y){
 	if(x < 0 || y < 0 || x >= TD_SW || y >= TD_SH)
-		return 999.f;
+		return 0.f;
 	return TD_depth_buffer[y*TD_SW+x];
 }
 
@@ -332,10 +358,14 @@ TD_FUNC void TD_update_screen(void){
 			*bc = TD_background_color;
 
 			// Set depth buffer pixels to max distance
-			*depth_ptr = 999.f;
-			*(depth_ptr+TD_SW) = 999.f;
+			*depth_ptr = 0.f;
+			*(depth_ptr+TD_SW) = 0.f;
 		}
-		puts(TD_NO_COLORS);
+		#ifndef TD_NO_COLOR
+		puts(TD_CLEAR_COLOR);
+		#else
+		putchar('\n');
+		#endif
 		uc += TD_SW;
 		bc += TD_SW;
 		depth_ptr += TD_SW;

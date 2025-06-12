@@ -141,16 +141,20 @@ TD_FUNC void TD_COLOR_printchar(TD_Color* uc, TD_Color* bc){
 
 // No color implementation
 
-static unsigned char TD_densities[] = " ````...--':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4V";
+static unsigned char TD_densities[] = " `````....---'':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4V";
 #define TD_densities_count (sizeof(TD_densities)/sizeof(unsigned char))
 
 TD_FUNC void TD_COLOR_printchar(TD_Color* uc, TD_Color* bc){
-	int density = (
-		((uc->r+bc->r)>>1)*0.2126f +
-		((uc->g+bc->g)>>1)*0.7152f +
-		((uc->b+bc->b)>>1)*0.0722f
-	) /256.f * (float)(TD_densities_count);
-	printf("%c", TD_densities[density]);
+	int density;
+	if(uc->r || uc->g || uc->b || bc->r || bc->g || bc->b)
+		density = (
+			((uc->r+bc->r)>>1)*0.2126f +
+			((uc->g+bc->g)>>1)*0.7152f +
+			((uc->b+bc->b)>>1)*0.0722f
+		) / 256.f * (float)(TD_densities_count);
+	else
+		density = 0;
+	putchar(TD_densities[TD_CLAMP(density,0,TD_densities_count)]);
 }
 
 #endif

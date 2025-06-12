@@ -29,11 +29,18 @@
 #define DIFFUSE 0.8f
 #define AMBIENT 0.2f
 
-// Fragment shader
-TD_Color test_shader(TD_ShaderInfo* si){
+// Fragment shaders
+static TD_Color test_shader(TD_ShaderInfo* si){
 	TD_Vec3 light_dir = TD_Vec3_normalize(TD_Vec3_sub(LIGHT_SOURCE,si->pos));
 	float diffuse = TD_MAX(TD_Vec3_dot(TD_Vec3_normalize(si->normal),light_dir),0.f);
-	return (TD_Color){(DIFFUSE*diffuse+AMBIENT)*si->color.r,(DIFFUSE*diffuse+AMBIENT)*si->color.g,(DIFFUSE*diffuse+AMBIENT)*si->color.b};
+	return (TD_Color){
+		(DIFFUSE*diffuse+AMBIENT)*si->color.r,
+		(DIFFUSE*diffuse+AMBIENT)*si->color.g,
+		(DIFFUSE*diffuse+AMBIENT)*si->color.b
+	};
+}
+static TD_Color texture_shader(TD_ShaderInfo* si){
+	return TD_sample_texture(si->uv.x,si->uv.y,si->texture);
 }
 
 // Hard coded cube mesh
@@ -62,6 +69,8 @@ TD_Mesh cube_mesh = (TD_Mesh){
 		TD_Vec3UP,
 		TD_Vec3DOWN
 	},
+	NULL,
+	NULL,
 	// v = vertex index, c = color / uv index
 	// {v1,v2,v3, c1,c2,c3, normal index}
 	(TD_Face[]){
@@ -92,15 +101,48 @@ TD_Mesh cube_mesh = (TD_Mesh){
 	}
 };
 
+TD_Texture lebron_texture = TD_TextureEMPTY;
+
+TD_Mesh textured_plane = (TD_Mesh){
+	(TD_Vec3[]){
+		{-0.5f,-0.5f,0.f},
+		{0.5f,-0.5f,0.f},
+		{-0.5f,0.5f,0.f},
+		{0.5f,0.5f,0.f}
+	},
+	NULL,
+	NULL,
+	(TD_Vec2[]){
+		{0.f,0.f},
+		{1.f,0.f},
+		{0.f,1.f},
+		{1.f,1.f}
+	},
+	&lebron_texture,
+	(TD_Face[]){
+		{0,1,2, 0,1,2},
+		{1,3,2, 1,3,2}
+	},
+	2,
+	(TD_Transform){
+		(TD_Vec3){-2.f,0.f,4.f},
+		TD_Vec3ZERO,
+		TD_Vec3IDENTITY
+	}
+};
+
 int main(void){
 	// Change the resolution
 	// 200x200 and beyond is too laggy
-	if(!TD_init(150,100))
+	if(!TD_init(200,120))
 		return 1;
 
 	// Time variables
 	TD_time_t last_frame = TD_get_ticks();
 	float deltaTime = 0.f, FPS = 1.f;
+
+	if(!TD_load_texture("assets/lebron_img.jpg",&lebron_texture))
+		exit(0);
 
 	TD_clear_screen();
 
@@ -108,6 +150,10 @@ int main(void){
 		// Render the cube on screen
 		TD_use_shader(test_shader);
 		TD_render_mesh(&cube_mesh);
+
+		// Render the textured plane on screen
+		TD_use_shader(texture_shader);
+		TD_render_mesh(&textured_plane);
 
 		// Display changes + Clear buffers
 		TD_update_screen();
@@ -125,24 +171,25 @@ int main(void){
 		while(TD_get_input(&c)){
 			switch(c){
 			case TD_CTRL_C:
+				TD_free_texture(&lebron_texture);
 				exit(0);
 			case 'w':
-				movement_vector.z = PLAYER_SPEED*deltaTime;
+				movement_vector.z = PLAYER_SPEED;
 				break;
 			case 's':
-				movement_vector.z -= PLAYER_SPEED*deltaTime;
+				movement_vector.z = -PLAYER_SPEED;
 				break;
 			case 'a':
-				movement_vector.x -= PLAYER_SPEED*deltaTime;
+				movement_vector.x = -PLAYER_SPEED;
 				break;
 			case 'd':
-				movement_vector.x += PLAYER_SPEED*deltaTime;
+				movement_vector.x = PLAYER_SPEED;
 				break;
 			case ' ':
-				movement_vector.y += PLAYER_SPEED*deltaTime;
+				movement_vector.y = PLAYER_SPEED;
 				break;
 			case 'c':
-				movement_vector.y -= PLAYER_SPEED*deltaTime;
+				movement_vector.y = -PLAYER_SPEED;
 				break;
 			case 'i':
 				TD_camera.rotation.x += PLAYER_LOOK*deltaTime;
@@ -160,6 +207,7 @@ int main(void){
 		}
 		
 		// Applies movement
+		movement_vector = TD_Vec3_scale(movement_vector,deltaTime);
 		TD_Vec3 inverse_camera_rotation = (TD_Vec3){0.f,-TD_camera.rotation.y,0.f};
 		movement_vector = TD_Vec3_rotationZYX(&inverse_camera_rotation,&movement_vector);
 		TD_camera.position = TD_Vec3_add(TD_camera.position,movement_vector);

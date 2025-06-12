@@ -49,14 +49,10 @@ TD_FUNC float TD_edge_function(TD_Vec3* a, TD_Vec3* b, TD_Vec3* c){
 
 // Check pixel for triangle
 TD_FUNC TD_Vec3 TD_triangle_pixel(TD_Vec3* a, TD_Vec3* b, TD_Vec3* c, TD_Vec3 p){
-	float area = TD_edge_function(a,b,c);
 	float w0 = TD_edge_function(b,c,&p);
 	float w1 = TD_edge_function(c,a,&p);
 	float w2 = TD_edge_function(a,b,&p);
 	if(TD_CHECK_EDGE(w0) && TD_CHECK_EDGE(w1) && TD_CHECK_EDGE(w2)){
-		w0 /= area;
-		w1 /= area;
-		w2 /= area;
 		return (TD_Vec3){w0,w1,w2};
 	}else{
 		return TD_Vec3ZERO;
@@ -86,7 +82,7 @@ TD_FUNC void TD_render_face(TD_Mesh* m, TD_Face* f){
 	b = TD_Camera_transform(&b);
 	c = TD_Camera_transform(&c);
 
-	// Cull face if it's completely behind camera
+	// Cull face if it's partially behind camera
 	if(a.z <= 0.f || b.z <= 0.f || c.z <= 0.f)
 		return;
 
@@ -106,6 +102,8 @@ TD_FUNC void TD_render_face(TD_Mesh* m, TD_Face* f){
 	if(bounds.xmax - bounds.xmin <= 0 || bounds.ymax - bounds.ymin <= 0)
 		return;
 
+	float area = TD_edge_function(&a,&b,&c);
+
 	// Parse through each pixel where the triangle should be
 	for(int y = bounds.ymin; y < bounds.ymax; y++){
 		for(int x = bounds.xmin; x < bounds.xmax; x++){
@@ -117,16 +115,45 @@ TD_FUNC void TD_render_face(TD_Mesh* m, TD_Face* f){
 
 			// Check if they are not zero
 			if(!TD_Vec3_cmp(si.bc,TD_Vec3ZERO)){
+				// Divide barycentric coordinates with area
+				si.bc = TD_Vec3_div_scale(si.bc,area);
+
 				// Interpolated position
-				si.pos = TD_Vec3_interpolate(&a,&b,&c,&si.bc);
+				si.pos = (TD_Vec3){
+					a.x * si.bc.x + b.x * si.bc.y + c.x * si.bc.z,
+					a.y * si.bc.x + b.y * si.bc.y + c.y * si.bc.z,
+					1.f / (si.bc.x / a.z + si.bc.y / b.z + si.bc.z / c.z)
+				};
 
 				// Only render pixel if the depth is lesser than the one in depth buffer
-				if(si.pos.z >= 0.f && TD_sample_depth(x,y) > si.pos.z){
+				if(si.pos.z > 0.f && TD_sample_depth(x,y) < si.pos.z){
 					// Interpolated color (if there is color)
 					if(f->d >= 0 && f->e >= 0 && f->f >= 0 && m->colors)
-						si.color = TD_Color_interpolate(&m->colors[f->d],&m->colors[f->e],&m->colors[f->f],&si.bc);
+						si.color = (TD_Color){
+							((m->colors[f->d].r/a.z)*si.bc.x + (m->colors[f->e].r/b.z)*si.bc.y + (m->colors[f->f].r/c.z)*si.bc.z) * si.pos.z,
+							((m->colors[f->d].g/a.z)*si.bc.x + (m->colors[f->e].g/b.z)*si.bc.y + (m->colors[f->f].g/c.z)*si.bc.z) * si.pos.z,
+							((m->colors[f->d].b/a.z)*si.bc.x + (m->colors[f->e].b/b.z)*si.bc.y + (m->colors[f->f].b/c.z)*si.bc.z) * si.pos.z,
+						};
+					else
+						si.color = TD_WHITE;
+
+					// Interpolated UV coordinates
+					if(f->d >= 0 && f->e >= 0 && f->f >= 0 && m->uvs){
+						si.uv = (TD_Vec2){
+							((m->uvs[f->d].x/a.z)*si.bc.x + (m->uvs[f->e].x/b.z)*si.bc.y + (m->uvs[f->f].x/c.z)*si.bc.z) * si.pos.z,
+							((m->uvs[f->d].y/a.z)*si.bc.x + (m->uvs[f->e].y/b.z)*si.bc.y + (m->uvs[f->f].y/c.z)*si.bc.z) * si.pos.z
+						};
+					}else
+						si.uv = TD_Vec2ZERO;
+
+					// Give the texture
+					if(m->texture) si.texture = m->texture;
+
+					// Interpolated normals
 					if(f->normal >= 0 && m->normals)
 						si.normal = TD_Vec3_rotationZYX(&m->transform.rotation,&m->normals[f->normal]);
+					else
+						si.normal = TD_Vec3ZERO;
 
 					// Fragment shader
 					if(TD_shader){

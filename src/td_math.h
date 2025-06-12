@@ -4,13 +4,24 @@
 #include "terdimension.h"
 #include <math.h>
 
+// Macro creates a function which equates to
+// TD_FUNC TD_Vec3 TD_Vec3_(name)(TD_Vec3 a, TD_Vec3 b){
+//		return (TD_Vec3) (a (op) b)
+// }
+#define TD_VEC3_OPER(name,op) \
+TD_FUNC TD_Vec3 TD_Vec3_##name(TD_Vec3 a, TD_Vec3 b){\
+	return (TD_Vec3){a.x op b.x, a.y op b.y, a.z op b.z};\
+}
+#define TD_VEC2_OPER(name,op) \
+TD_FUNC TD_Vec2 TD_Vec2_##name(TD_Vec2 a, TD_Vec2 b){\
+	return (TD_Vec2){a.x op b.x, a.y op b.y};\
+}
+
 //======== Vec3 operations ===========
-TD_FUNC TD_Vec3 TD_Vec3_add(TD_Vec3 a, TD_Vec3 b){
-	return (TD_Vec3){a.x+b.x,a.y+b.y,a.z+b.z};
-}
-TD_FUNC TD_Vec3 TD_Vec3_sub(TD_Vec3 a, TD_Vec3 b){
-	return (TD_Vec3){a.x-b.x,a.y-b.y,a.z-b.z};
-}
+TD_VEC3_OPER(add,+)
+TD_VEC3_OPER(sub,-)
+TD_VEC3_OPER(div,/)
+TD_VEC3_OPER(mult,*)
 TD_FUNC TD_Vec3 TD_Vec3_cross(TD_Vec3 a, TD_Vec3 b){
 	return (TD_Vec3){(a.y*b.z)-(a.z*b.y),(a.z*b.x)-(a.x*b.z),(a.x*b.y)-(a.y*b.x)};
 }
@@ -19,9 +30,6 @@ TD_FUNC float TD_Vec3_dot(TD_Vec3 a, TD_Vec3 b){
 }
 TD_FUNC TD_Vec3 TD_Vec3_scale(TD_Vec3 a, float b){
 	return (TD_Vec3){a.x*b,a.y*b,a.z*b};
-}
-TD_FUNC TD_Vec3 TD_Vec3_div(TD_Vec3 a, TD_Vec3 b){
-	return (TD_Vec3){a.x/b.x,a.y/b.y,a.z/b.z};
 }
 TD_FUNC TD_Vec3 TD_Vec3_div_scale(TD_Vec3 a, float b){
 	if(b == 0.f) return TD_Vec3ZERO;
@@ -36,22 +44,15 @@ TD_FUNC TD_Vec3 TD_Vec3_normalize(TD_Vec3 v){
 TD_FUNC _Bool TD_Vec3_cmp(TD_Vec3 a, TD_Vec3 b){
 	return (a.x == b.x && a.y == b.y && a.z == b.z);
 }
-
 #define TD_Vec3_print(c,v) printf(c "%g, %g, %g\n",v.x,v.y,v.z)
 
-TD_FUNC TD_Vec3 TD_Vec3_interpolate(TD_Vec3* a, TD_Vec3* b, TD_Vec3* c, TD_Vec3* bc){
-	return (TD_Vec3){
-		a->x*bc->x+b->x*bc->y+c->x*bc->z,
-		a->y*bc->x+b->y*bc->y+c->y*bc->z,
-		a->z*bc->x+b->z*bc->y+c->z*bc->z
-	};
-}
-TD_FUNC TD_Color TD_Color_interpolate(TD_Color* a, TD_Color* b, TD_Color* c, TD_Vec3* bc){
-	return (TD_Color){
-		(unsigned char)(a->r*bc->x+b->r*bc->y+c->r*bc->z),
-		(unsigned char)(a->g*bc->x+b->g*bc->y+c->g*bc->z),
-		(unsigned char)(a->b*bc->x+b->b*bc->y+c->b*bc->z)
-	};
+//========= Vec2 operations ===========
+TD_VEC2_OPER(add,+)
+TD_VEC2_OPER(sub,-)
+TD_VEC2_OPER(div,/)
+TD_VEC2_OPER(mult,*)
+TD_FUNC TD_Vec2 TD_Vec2_div_scale(TD_Vec2 a, float b){
+	return (TD_Vec2){a.x/b,a.y/b};
 }
 
 //============ Transform ==============
