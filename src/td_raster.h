@@ -110,8 +110,11 @@ TD_FUNC void TD_render_face(TD_Mesh* m, TD_Face* f){
 			// Create the info for our shader
 			TD_ShaderInfo si;
 
+			// Get the world space position of current pixel
+			si.pos = TD_to_world(x,y);
+
 			// Barycentric coordinates
-			si.bc = TD_triangle_pixel(&a,&b,&c,TD_to_world(x,y));
+			si.bc = TD_triangle_pixel(&a,&b,&c,si.pos);
 
 			// Check if they are not zero
 			if(!TD_Vec3_cmp(si.bc,TD_Vec3ZERO)){
@@ -119,11 +122,7 @@ TD_FUNC void TD_render_face(TD_Mesh* m, TD_Face* f){
 				si.bc = TD_Vec3_div_scale(si.bc,area);
 
 				// Interpolated position
-				si.pos = (TD_Vec3){
-					a.x * si.bc.x + b.x * si.bc.y + c.x * si.bc.z,
-					a.y * si.bc.x + b.y * si.bc.y + c.y * si.bc.z,
-					1.f / (si.bc.x / a.z + si.bc.y / b.z + si.bc.z / c.z)
-				};
+				si.pos.z = 1.f / (si.bc.x / a.z + si.bc.y / b.z + si.bc.z / c.z);
 
 				// Only render pixel if the depth is lesser than the one in depth buffer
 				if(si.pos.z > 0.f && TD_sample_depth(x,y) < si.pos.z){

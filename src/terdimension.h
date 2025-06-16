@@ -96,7 +96,7 @@ typedef struct {
 	TD_Vec2* uvs;
 	TD_Texture* texture;
 	TD_Face* faces;
-	unsigned int face_count;
+	size_t face_count;
 	TD_Transform transform;
 } TD_Mesh;
 
@@ -151,6 +151,9 @@ TD_FUNC void TD_clear_screen(void);
 
 // Default transform
 #define TD_TransformIDENTITY (TD_Transform){TD_Vec3ZERO,TD_Vec3ZERO,TD_Vec3IDENTITY}
+
+// Empty mesh
+#define TD_MeshEMPTY (TD_Mesh){NULL,NULL,NULL,NULL,NULL,NULL,0,TD_TransformIDENTITY};
 
 // Default camera
 #define TD_CameraDEFAULT TD_TransformIDENTITY

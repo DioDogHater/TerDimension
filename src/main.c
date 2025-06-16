@@ -43,6 +43,9 @@ static TD_Color texture_shader(TD_ShaderInfo* si){
 	return TD_sample_texture(si->uv.x,si->uv.y,si->texture);
 }
 
+// Texture of lebron's divine face
+TD_Texture lebron_texture = TD_TextureEMPTY;
+
 // Hard coded cube mesh
 TD_Mesh cube_mesh = (TD_Mesh){
 	(TD_Vec3[]){
@@ -101,8 +104,6 @@ TD_Mesh cube_mesh = (TD_Mesh){
 	}
 };
 
-TD_Texture lebron_texture = TD_TextureEMPTY;
-
 TD_Mesh textured_plane = (TD_Mesh){
 	(TD_Vec3[]){
 		{-0.5f,-0.5f,0.f},
@@ -121,9 +122,11 @@ TD_Mesh textured_plane = (TD_Mesh){
 	&lebron_texture,
 	(TD_Face[]){
 		{0,1,2, 0,1,2},
-		{1,3,2, 1,3,2}
+		{1,3,2, 1,3,2},
+		{2,1,0, 2,1,0},
+		{2,3,1, 2,3,1}
 	},
-	2,
+	4,
 	(TD_Transform){
 		(TD_Vec3){-2.f,0.f,4.f},
 		TD_Vec3ZERO,
@@ -140,6 +143,7 @@ int main(void){
 	// Time variables
 	TD_time_t last_frame = TD_get_ticks();
 	float deltaTime = 0.f, FPS = 1.f;
+	float time = 0.f;
 
 	if(!TD_load_texture("assets/lebron_img.jpg",&lebron_texture))
 		exit(0);
@@ -161,6 +165,11 @@ int main(void){
 		// Rotate cube
 		cube_mesh.transform.rotation.y += 3.5f*deltaTime;
 		cube_mesh.transform.rotation.x += 4.f*deltaTime;
+
+		// Rotate the plane
+		textured_plane.transform.rotation.y += 2.f*deltaTime;
+		textured_plane.transform.rotation.z += 0.25f*deltaTime;
+		textured_plane.transform.scale = TD_Vec3_scale(TD_Vec3IDENTITY,sin(time)*0.5f+0.75f);
 
 		// Handle input
 		// If you wish to disable input, please omit this part of the code
@@ -211,6 +220,9 @@ int main(void){
 		TD_Vec3 inverse_camera_rotation = (TD_Vec3){0.f,-TD_camera.rotation.y,0.f};
 		movement_vector = TD_Vec3_rotationZYX(&inverse_camera_rotation,&movement_vector);
 		TD_camera.position = TD_Vec3_add(TD_camera.position,movement_vector);
+
+		// Advance time
+		time += deltaTime;
 
 		// Update the FPS counter and deltaTime
 		deltaTime = TD_get_deltaTime(&last_frame);
