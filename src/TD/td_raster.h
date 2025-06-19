@@ -1,7 +1,6 @@
 #ifndef TERDIMENSION_RASTERIZER_H
 #define TERDIMENSION_RASTERIZER_H
 
-#include "terdimension.h"
 #include "td_math.h"
 
 // 2D integer vector

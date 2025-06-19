@@ -2,27 +2,29 @@
 #include <stdlib.h>
 #include <math.h>
 
+// OTHER OPTIONS:
+
+// TD_SDL (not implemented yet) - renders in an SDL window
+
+// TD_NO_UNICODE - disables unicode characters (faster)
+
+// TD_DISABLE_BRIGHT_COLORS - disables bright colors in 4bit color mode
+// (when TD_COLOR_RGB and TD_NO_COLOR are both undefined)
+
+// TD_NO_COLOR - no color, just ascii characters (fastest)
+
+// TD_NO_TEXTURES - no textures, no stb_image.h
+
+// TD_DISABLE_INPUT - no input
+
 // Render in the terminal
 #define TD_TERMINAL
-
-// Uncomment this following line if you want to render without color
-// Also speeds up the program, so fast that input needs to be adjusted
-// I recommend quadrupling the speed of all input interactions
-//#define TD_NO_COLOR
 
 // Comment out this line to disable RGB (if color doesn't work)
 #define TD_COLOR_RGB
 
-// To remove unicode characters (top half block characater)
-// uncomment this following line
-// (BTW this will also speed up the program)
-//#define TD_NO_UNICODE
-
-// To remove input detection, uncomment this following line
-//#define TD_DISABLE_INPUT
-
 #include "terdimension.h"
-#include "td_time.h"
+#include "TD/td_time.h"
 
 // Light source
 #define LIGHT_SOURCE (TD_Vec3){10.f,10.f,-10.f}

@@ -14,6 +14,3 @@ target_link_libraries(main m)
 
 # Uncomment this line if you have SDL installed system-wide
 #target_link_libraries(main SDL)
-
-# For multi-threading, not implemented yet
-#target_link_libraries(main pthread)

@@ -1,8 +1,6 @@
 #ifndef TERDIMENSION_COLOR_H
 #define TERDIMENSION_COLOR_H
 
-#include "terdimension.h"
-
 // This is a header to handle colors and pixels on the Terminal
 
 // To use RGB colors, define TD_COLOR_RGB

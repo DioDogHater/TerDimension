@@ -2,11 +2,10 @@
 #define TERDIMENSION_TEXTURE_H
 
 // Handle textures and their loading
-#include "terdimension.h"
 #include <math.h>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include "../stb_image.h"
 
 // Loads texture using stb_image
 TD_FUNC _Bool TD_load_texture(char* filename, TD_Texture* dest){
