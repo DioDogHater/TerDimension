@@ -211,7 +211,7 @@ TD_Shader TD_shader = NULL;
 TD_FUNC void  TD_clear_screen() { printf(TD_CLEAR_TERMINAL); }
 
 // Include the terminal color header
-#include "TD/td_color.h"
+#include "td_color.h"
 
 // Char buffer for stdout (to improve performance)
 static char* TD_STDOUT_BUFFER = NULL;
@@ -226,11 +226,11 @@ static float* TD_depth_buffer = NULL;
 
 // Texture handling
 #ifndef TD_NO_TEXTURES
-#include "TD/td_texture.h"
+#include "td_texture.h"
 #endif
 
 // Input handling
-#include "TD/td_input.h"
+#include "td_input.h"
 
 // Initialize the whole library
 // w : Screen Width, h : Screen Height
@@ -391,9 +391,9 @@ TD_FUNC void TD_update_screen(void){
 #endif
 
 //========== Math functions ======
-#include "TD/td_math.h"
+#include "td_math.h"
 
 //========== Rasterization =======
-#include "TD/td_raster.h"
+#include "td_raster.h"
 
 #endif

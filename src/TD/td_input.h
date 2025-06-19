@@ -1,6 +1,7 @@
 #ifndef TERDIMENSION_INPUT_H
 #define TERDIMENSION_INPUT_H
 
+#include "terdimension.h"
 #include <stdio.h>
 #include <stdlib.h>
 

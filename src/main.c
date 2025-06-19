@@ -23,7 +23,7 @@
 // Comment out this line to disable RGB (if color doesn't work)
 #define TD_COLOR_RGB
 
-#include "terdimension.h"
+#include "TD/terdimension.h"
 #include "TD/td_time.h"
 
 // Light source
