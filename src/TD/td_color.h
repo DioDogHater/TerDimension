@@ -18,6 +18,7 @@
 // Will use characters with different "densities" to
 // represent different brightness levels
 
+// Global variables / macros for each color mode
 #ifdef TD_COLOR_RGB
 #define TD_SET_FOREGROUND	"\033[38;2;%d;%d;%dm"
 #define TD_SET_BACKGROUND	"\033[48;2;%d;%d;%dm"
