@@ -32,7 +32,7 @@
 #define AMBIENT 0.2f
 
 // Fragment shaders
-static TD_Color test_shader(TD_ShaderInfo* si){
+TD_FUNC TD_Color test_shader(TD_ShaderInfo* si){
 	TD_Vec3 light_dir = TD_Vec3_normalize(TD_Vec3_sub(LIGHT_SOURCE,si->pos));
 	float diffuse = TD_MAX(TD_Vec3_dot(TD_Vec3_normalize(si->normal),light_dir),0.f);
 	return (TD_Color){
@@ -153,6 +153,9 @@ int main(void){
 	TD_clear_screen();
 
 	while(1){
+		// Clear buffers
+		TD_clear_buffers();
+
 		// Render the cube on screen
 		TD_use_shader(test_shader);
 		TD_render_mesh(&cube_mesh);
@@ -161,7 +164,7 @@ int main(void){
 		TD_use_shader(texture_shader);
 		TD_render_mesh(&textured_plane);
 
-		// Display changes + Clear buffers
+		// Display changes
 		TD_update_screen();
 
 		// Rotate cube

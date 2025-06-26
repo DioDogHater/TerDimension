@@ -119,8 +119,11 @@ typedef TD_Color (*TD_Shader)(TD_ShaderInfo*);
 TD_FUNC _Bool TD_init(unsigned int, unsigned int);
 TD_FUNC void TD_quit(void);
 TD_FUNC void TD_set_pixel(int,int,TD_Color);
+TD_FUNC float TD_sample_depth(int,int);
+TD_FUNC void TD_set_depth(int,int,float);
 TD_FUNC void TD_update_screen(void);
 TD_FUNC void TD_clear_screen(void);
+TD_FUNC void TD_clear_buffers(void);
 
 //========== Constants ===========
 
@@ -164,6 +167,9 @@ TD_FUNC void TD_clear_screen(void);
 // Winding order
 #define TD_CCW 0
 #define TD_CW 1
+
+// Default depth
+#define TD_DEFAULT_DEPTH 1000.f
 
 // Amount of bytes allocated per pixel for stdout buffer
 // 100 bytes per pixel takes about 1-2 MB for most resolutions and works well
@@ -331,8 +337,14 @@ TD_FUNC void TD_quit(void){
 
 TD_FUNC float TD_sample_depth(int x, int y){
 	if(x < 0 || y < 0 || x >= TD_SW || y >= TD_SH)
-		return 0.f;
+		return TD_DEFAULT_DEPTH;
 	return TD_depth_buffer[y*TD_SW+x];
+}
+
+TD_FUNC void TD_set_depth(int x, int y, float depth){
+	if(x < 0 || y < 0 || x >= TD_SW || y >= TD_SH)
+		return;
+	TD_depth_buffer[y*TD_SW+x] = depth;
 }
 
 TD_FUNC void TD_set_pixel(int x, int y, TD_Color c){
@@ -359,10 +371,6 @@ TD_FUNC void TD_update_screen(void){
 			// Clear current pixels
 			*uc = TD_background_color;
 			*bc = TD_background_color;
-
-			// Set depth buffer pixels to max distance
-			*depth_ptr = 0.f;
-			*(depth_ptr+TD_SW) = 0.f;
 		}
 		#ifndef TD_NO_COLOR
 		puts(TD_CLEAR_COLOR);
@@ -375,6 +383,15 @@ TD_FUNC void TD_update_screen(void){
 	}
 	// Flush the buffer into stdout
 	fflush(stdout);
+}
+
+TD_FUNC void TD_clear_buffers(void){
+	TD_Color* c = TD_frame_buffer;
+	float* d = TD_depth_buffer;
+	for(long i = 0; i < TD_SW*TD_SH; i++, c++, d++){
+		*c = TD_BLACK;
+		*d = TD_DEFAULT_DEPTH;
+	}
 }
 
 #elif defined(TD_SDL)

@@ -125,7 +125,7 @@ TD_FUNC void TD_render_face(TD_Mesh* m, TD_Face* f){
 				si.pos.z = 1.f / (si.bc.x / a.z + si.bc.y / b.z + si.bc.z / c.z);
 
 				// Only render pixel if the depth is lesser than the one in depth buffer
-				if(si.pos.z > 0.f && TD_sample_depth(x,y) < si.pos.z){
+				if(si.pos.z > 0.f && si.pos.z < TD_sample_depth(x,y)){
 					// Interpolated color (if there is color)
 					if(f->d >= 0 && f->e >= 0 && f->f >= 0 && m->colors)
 						si.color = (TD_Color){
@@ -159,6 +159,7 @@ TD_FUNC void TD_render_face(TD_Mesh* m, TD_Face* f){
 						TD_set_pixel(x,y,TD_shader(&si));
 					}else
 						TD_set_pixel(x,y,(TD_Color){255*si.bc.x,255*si.bc.y,255*si.bc.z});
+					TD_set_depth(x,y,si.pos.z);
 				}
 			}
 		}
