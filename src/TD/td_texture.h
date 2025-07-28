@@ -2,7 +2,7 @@
 #define TERDIMENSION_TEXTURE_H
 
 // Handle textures and their loading
-#include "terdimension.h"
+#include "td_definitions.h"
 #include <math.h>
 
 #define STB_IMAGE_IMPLEMENTATION

@@ -4,7 +4,7 @@
 // Loads obj meshes using fast_obj.h
 // Thanks thisistherk, you are very helpful
 
-#include "terdimension.h"
+#include "td_definitions.h"
 #include "../fast_obj.h"
 
 // Function to parse and transform a .obj file into a mesh

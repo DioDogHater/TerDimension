@@ -1,7 +1,7 @@
 #ifndef TERDIMENSION_MATH_H
 #define TERDIMENSION_MATH_H
 
-#include "terdimension.h"
+#include "td_definitions.h"
 #include <math.h>
 
 // Macro creates a function which equates to

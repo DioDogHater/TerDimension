@@ -1,7 +1,8 @@
 #ifndef TERDIMENSION_COLOR_H
 #define TERDIMENSION_COLOR_H
 
-#include "terdimension.h"
+#include "td_definitions.h"
+#include <math.h>
 
 // This is a header to handle colors and pixels on the Terminal
 
@@ -60,13 +61,13 @@ static TD_4bit_color TD_4bit_colors[] =
 #endif
 TD_FUNC TD_4bit_color* TD_COLOR_GET(TD_Color c){
 	TD_4bit_color* best_ptr;
-	float biggest_accuracy = 999.f;
+	unsigned int biggest_accuracy = 999.f;
 	TD_4bit_color* ptr = TD_4bit_colors;
 	for(int i = 0; i < TD_4bit_colors_count; i++, ptr++){
-		float accuracy = (
-			fabs(c.r-ptr->r)+
-			fabs(c.g-ptr->g)+
-			fabs(c.b-ptr->b)
+		unsigned int accuracy = sqrt(
+			abs(c.r-ptr->r)+
+			abs(c.g-ptr->g)+
+			abs(c.b-ptr->b)
 		);
 		if(accuracy < biggest_accuracy){
 			biggest_accuracy = accuracy;
@@ -93,7 +94,7 @@ TD_FUNC void TD_COLOR_printchar(TD_Color* uc, TD_Color* bc){
 			((uc->r+bc->r)>>1)*0.2126f +
 			((uc->g+bc->g)>>1)*0.7152f +
 			((uc->b+bc->b)>>1)*0.0722f
-		) / 256.f * (float)(TD_densities_count);
+		) / 300.f * (float)(TD_densities_count);
 	else
 		density = 0;
 	putchar(TD_densities[TD_CLAMP(density,0,TD_densities_count)]);

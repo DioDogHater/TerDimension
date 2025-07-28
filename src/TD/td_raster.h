@@ -1,7 +1,7 @@
 #ifndef TERDIMENSION_RASTERIZER_H
 #define TERDIMENSION_RASTERIZER_H
 
-#include "terdimension.h"
+#include "td_definitions.h"
 #include "td_math.h"
 
 // 2D integer vector
@@ -32,10 +32,10 @@ TD_FUNC TD_Vec3 TD_to_world(int x, int y){
 // Get bounds of a triangle
 TD_FUNC TD_Bounds TD_triangle_bounds(TD_Vec2i a, TD_Vec2i b, TD_Vec2i c){
 	return (TD_Bounds){
-		TD_MAX(TD_MIN(a.x,TD_MIN(b.x,c.x)),0),
-		TD_MIN(TD_MAX(a.x,TD_MAX(b.x,c.x)),TD_SW),
-		TD_MAX(TD_MIN(a.y,TD_MIN(b.y,c.y)),0),
-		TD_MIN(TD_MAX(a.y,TD_MAX(b.y,c.y)),TD_SH)
+		(int)TD_MAX(TD_MIN(a.x,TD_MIN(b.x,c.x)),0),
+		(int)TD_MIN(TD_MAX(a.x,TD_MAX(b.x,c.x)),TD_SW),
+		(int)TD_MAX(TD_MIN(a.y,TD_MIN(b.y,c.y)),0),
+		(int)TD_MIN(TD_MAX(a.y,TD_MAX(b.y,c.y)),TD_SH)
 	};
 }
 
@@ -129,9 +129,9 @@ TD_FUNC void TD_render_face(TD_Mesh* m, TD_Face* f){
 					// Interpolated color (if there is color)
 					if(f->d >= 0 && f->e >= 0 && f->f >= 0 && m->colors)
 						si.color = (TD_Color){
-							((m->colors[f->d].r/a.z)*si.bc.x + (m->colors[f->e].r/b.z)*si.bc.y + (m->colors[f->f].r/c.z)*si.bc.z) * si.pos.z,
-							((m->colors[f->d].g/a.z)*si.bc.x + (m->colors[f->e].g/b.z)*si.bc.y + (m->colors[f->f].g/c.z)*si.bc.z) * si.pos.z,
-							((m->colors[f->d].b/a.z)*si.bc.x + (m->colors[f->e].b/b.z)*si.bc.y + (m->colors[f->f].b/c.z)*si.bc.z) * si.pos.z,
+							(unsigned char)(((m->colors[f->d].r/a.z)*si.bc.x + (m->colors[f->e].r/b.z)*si.bc.y + (m->colors[f->f].r/c.z)*si.bc.z) * si.pos.z),
+							(unsigned char)(((m->colors[f->d].g/a.z)*si.bc.x + (m->colors[f->e].g/b.z)*si.bc.y + (m->colors[f->f].g/c.z)*si.bc.z) * si.pos.z),
+							(unsigned char)(((m->colors[f->d].b/a.z)*si.bc.x + (m->colors[f->e].b/b.z)*si.bc.y + (m->colors[f->f].b/c.z)*si.bc.z) * si.pos.z),
 						};
 					else
 						si.color = TD_WHITE;
@@ -158,7 +158,7 @@ TD_FUNC void TD_render_face(TD_Mesh* m, TD_Face* f){
 					if(TD_shader){
 						TD_set_pixel(x,y,TD_shader(&si));
 					}else
-						TD_set_pixel(x,y,(TD_Color){255*si.bc.x,255*si.bc.y,255*si.bc.z});
+						TD_set_pixel(x,y,(TD_Color){(unsigned char)(255.f*si.bc.x),(unsigned char)(255.f*si.bc.y),(unsigned char)(255.f*si.bc.z)});
 					TD_set_depth(x,y,si.pos.z);
 				}
 			}

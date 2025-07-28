@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
 // OTHER OPTIONS:
 
@@ -32,7 +31,7 @@
 #define AMBIENT 0.2f
 
 // Fragment shaders
-TD_FUNC TD_Color test_shader(TD_ShaderInfo* si){
+static TD_Color test_shader(TD_ShaderInfo* si){
 	TD_Vec3 light_dir = TD_Vec3_normalize(TD_Vec3_sub(LIGHT_SOURCE,si->pos));
 	float diffuse = TD_MAX(TD_Vec3_dot(TD_Vec3_normalize(si->normal),light_dir),0.f);
 	return (TD_Color){
@@ -174,7 +173,6 @@ int main(void){
 		// Rotate the plane
 		textured_plane.transform.rotation.y += 2.f*deltaTime;
 		textured_plane.transform.rotation.z += 0.25f*deltaTime;
-		textured_plane.transform.scale = TD_Vec3_scale(TD_Vec3IDENTITY,sin(time)*0.5f+0.75f);
 
 		// Handle input
 		// If you wish to disable input, please omit this part of the code
