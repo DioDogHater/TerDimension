@@ -4,6 +4,9 @@
 #include "td_definitions.h"
 #include <math.h>
 
+#define TD_to_deg(r) ((r)/3.1415f*180.f)
+#define TD_to_rad(d) ((d)/180.f*3.1415f)
+
 // Macro creates a function which equates to
 // TD_FUNC TD_Vec3 TD_Vec3_(name)(TD_Vec3 a, TD_Vec3 b){
 //		return (TD_Vec3) (a (op) b)
@@ -22,6 +25,9 @@ TD_VEC3_OPER(add,+)
 TD_VEC3_OPER(sub,-)
 TD_VEC3_OPER(div,/)
 TD_VEC3_OPER(mult,*)
+TD_FUNC TD_Vec3 TD_Vec3_abs(TD_Vec3 v){
+	return (TD_Vec3){fabsf(v.x), fabsf(v.y), fabsf(v.z)};
+}
 TD_FUNC TD_Vec3 TD_Vec3_cross(TD_Vec3 a, TD_Vec3 b){
 	return (TD_Vec3){(a.y*b.z)-(a.z*b.y),(a.z*b.x)-(a.x*b.z),(a.x*b.y)-(a.y*b.x)};
 }
@@ -39,12 +45,16 @@ TD_FUNC float TD_Vec3_magnitude(TD_Vec3 v){
 	return sqrt(TD_Vec3_dot(v,v));
 }
 TD_FUNC TD_Vec3 TD_Vec3_normalize(TD_Vec3 v){
-	return TD_Vec3_div_scale(v,TD_Vec3_magnitude(v));
+	float m = TD_Vec3_magnitude(v);
+	if(m == 0.f)
+		return TD_Vec3ZERO;
+	return (TD_Vec3){v.x/m, v.y/m, v.z/m};
 }
 TD_FUNC _Bool TD_Vec3_cmp(TD_Vec3 a, TD_Vec3 b){
 	return (a.x == b.x && a.y == b.y && a.z == b.z);
 }
-#define TD_Vec3_print(c,v) printf(c "%g, %g, %g\n",v.x,v.y,v.z)
+#define TD_Vec3FORMAT "%g %g %g"
+#define TD_Vec3ARGS(v) v.x, v.y, v.z
 
 //========= Vec2 operations ===========
 TD_VEC2_OPER(add,+)

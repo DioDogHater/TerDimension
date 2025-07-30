@@ -1,183 +1,72 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
-// OTHER OPTIONS:
 
-// TD_SDL (not implemented yet) - renders in an SDL window
-
-// TD_NO_UNICODE - disables unicode characters (faster)
-
-// TD_DISABLE_BRIGHT_COLORS - disables bright colors in 4bit color mode
-// (when TD_COLOR_RGB and TD_NO_COLOR are both undefined)
-
-// TD_NO_COLOR - no color, just ascii characters (fastest)
-
+// Other options for TerDimension
 // TD_NO_TEXTURES - no textures, no stb_image.h
+// TD_DISABLE_INPUT - no input, only detect if CTRL+C or CTRL+Z are pressed
 
-// TD_DISABLE_INPUT - no input
-
-// Render in the terminal
-#define TD_TERMINAL
-
-// Comment out this line to disable RGB (if color doesn't work)
-#define TD_COLOR_RGB
-
+#include "TD/td_definitions.h"
 #include "TD/terdimension.h"
 #include "TD/td_time.h"
 
-// Light source
-#define LIGHT_SOURCE (TD_Vec3){10.f,10.f,-10.f}
-#define DIFFUSE 0.8f
-#define AMBIENT 0.2f
+float time = 0.f;
 
-// Fragment shaders
-static TD_Color test_shader(TD_ShaderInfo* si){
-	TD_Vec3 light_dir = TD_Vec3_normalize(TD_Vec3_sub(LIGHT_SOURCE,si->pos));
-	float diffuse = TD_MAX(TD_Vec3_dot(TD_Vec3_normalize(si->normal),light_dir),0.f);
-	return (TD_Color){
-		(DIFFUSE*diffuse+AMBIENT)*si->color.r,
-		(DIFFUSE*diffuse+AMBIENT)*si->color.g,
-		(DIFFUSE*diffuse+AMBIENT)*si->color.b
-	};
-}
-static TD_Color texture_shader(TD_ShaderInfo* si){
-	return TD_sample_texture(si->uv.x,si->uv.y,si->texture);
-}
-
-// Texture of lebron's divine face
-TD_Texture lebron_texture = TD_TextureEMPTY;
-
-// Hard coded cube mesh
-TD_Mesh cube_mesh = (TD_Mesh){
-	(TD_Vec3[]){
-		{-0.5f,-0.5f,-0.5f},
-		{-0.5f,0.5f,-0.5f},
-		{0.5f,-0.5f,-0.5f},
-		{0.5f,0.5f,-0.5f},
-		{0.5f,-0.5f,0.5f},
-		{0.5f,0.5f,0.5f},
-		{-0.5f,-0.5f,0.5f},
-		{-0.5f,0.5f,0.5f}
-	},
-	(TD_Color[]){
-		TD_RED,
-		TD_BLUE,
-		TD_GREEN,
-		TD_WHITE
-	},
-	(TD_Vec3[]){
-		TD_Vec3BACK,
-		TD_Vec3FRONT,
-		TD_Vec3LEFT,
-		TD_Vec3RIGHT,
-		TD_Vec3UP,
-		TD_Vec3DOWN
-	},
-	NULL,
-	NULL,
-	// v = vertex index, c = color / uv index
-	// {v1,v2,v3, c1,c2,c3, normal index}
-	(TD_Face[]){
-		// Back
-		{2,1,0, 2,1,0, 0},
-		{2,3,1, 2,3,1, 0},
-		// Front
-		{6,5,4, 3,0,1, 1},
-		{6,7,5, 3,2,0, 1},
-		// Left
-		{0,1,6, 0,1,3, 2},
-		{7,6,1, 2,3,1, 2},
-		// Right
-		{4,3,2, 1,3,2, 3},
-		{5,3,4, 0,3,1, 3},
-		// Top
-		{3,7,1, 3,2,1, 4},
-		{3,5,7, 3,0,2, 4},
-		// Bottom
-		{0,6,2, 0,3,2, 5},
-		{6,4,2, 3,1,2, 5}
-	},
-	12,
-	(TD_Transform){
-		(TD_Vec3){0.f,0.f,5.f},
-		TD_Vec3ZERO,
-		TD_Vec3IDENTITY
-	}
-};
-
-TD_Mesh textured_plane = (TD_Mesh){
-	(TD_Vec3[]){
-		{-0.5f,-0.5f,0.f},
-		{0.5f,-0.5f,0.f},
-		{-0.5f,0.5f,0.f},
-		{0.5f,0.5f,0.f}
-	},
-	NULL,
-	NULL,
-	(TD_Vec2[]){
-		{0.f,0.f},
-		{1.f,0.f},
-		{0.f,1.f},
-		{1.f,1.f}
-	},
-	&lebron_texture,
-	(TD_Face[]){
-		{0,1,2, 0,1,2},
-		{1,3,2, 1,3,2},
-		{2,1,0, 2,1,0},
-		{2,3,1, 2,3,1}
-	},
-	4,
-	(TD_Transform){
-		(TD_Vec3){-2.f,0.f,4.f},
-		TD_Vec3ZERO,
-		TD_Vec3IDENTITY
-	}
-};
+#include "example_meshes.h"
+#include "example_raymarching.h"
 
 int main(void){
 	// Change the resolution
-	// 200x200 and beyond is too laggy
+	// 200x200 and beyond is slow
 	if(!TD_init(200,120))
 		return 1;
 
 	// Time variables
 	TD_time_t last_frame = TD_get_ticks();
 	float deltaTime = 0.f, FPS = 1.f;
-	float time = 0.f;
 
 	if(!TD_load_texture("assets/lebron_img.jpg",&lebron_texture))
 		exit(0);
 
+	// Hide the text before
 	TD_clear_screen();
 
+	// Set rendering to default (change if you want something else)
+	TD_set_render_flags(TD_RENDER_DEFAULT);
+
 	while(1){
-		// Clear buffers
+		// Update the FPS counter and deltaTime
+		deltaTime = TD_get_deltaTime(&last_frame);
+		FPS = TD_GET_FPS(deltaTime);
+
+		// Advance time
+		time += deltaTime;
+
 		TD_clear_buffers();
 
 		// Render the cube on screen
-		TD_use_shader(test_shader);
-		TD_render_mesh(&cube_mesh);
+		TD_use_shader(diffuse_lighting_shader);
+		TD_render_mesh(&multicolor_cube);
 
 		// Render the textured plane on screen
 		TD_use_shader(texture_shader);
 		TD_render_mesh(&textured_plane);
 
+		TD_use_shader(raymarch_shader);
+		TD_render_mesh(&raymarch_plane);
+
 		// Display changes
 		TD_update_screen();
 
 		// Rotate cube
-		cube_mesh.transform.rotation.y += 3.5f*deltaTime;
-		cube_mesh.transform.rotation.x += 4.f*deltaTime;
-
-		// Rotate the plane
-		textured_plane.transform.rotation.y += 2.f*deltaTime;
-		textured_plane.transform.rotation.z += 0.25f*deltaTime;
+		multicolor_cube.transform.rotation.y += 3.5f*deltaTime;
+		multicolor_cube.transform.rotation.x += 4.f*deltaTime;
 
 		// Handle input
 		// If you wish to disable input, please omit this part of the code
-		#define PLAYER_SPEED 4.f
-		#define PLAYER_LOOK 2.f
+		#define PLAYER_SPEED 0.25f
+		#define PLAYER_LOOK 0.05f
 		char c;
 		TD_Vec3 movement_vector = TD_Vec3ZERO;
 		while(TD_get_input(&c)){
@@ -204,35 +93,41 @@ int main(void){
 				movement_vector.y = -PLAYER_SPEED;
 				break;
 			case 'i':
-				TD_camera.rotation.x += PLAYER_LOOK*deltaTime;
+				TD_camera.rotation.x += PLAYER_LOOK;
 				break;
 			case 'k':
-				TD_camera.rotation.x -= PLAYER_LOOK*deltaTime;
+				TD_camera.rotation.x -= PLAYER_LOOK;
 				break;
 			case 'j':
-				TD_camera.rotation.y -= PLAYER_LOOK*deltaTime;
+				TD_camera.rotation.y -= PLAYER_LOOK;
 				break;
 			case 'l':
-				TD_camera.rotation.y += PLAYER_LOOK*deltaTime;
+				TD_camera.rotation.y += PLAYER_LOOK;
+				break;
+			case 't':
+				TD_render_flags = ((TD_render_flags & TD_RENDER_RGB) ? TD_RENDER_COLOR : TD_RENDER_RGB) | (TD_render_flags & TD_RENDER_UNICODE);
+				break;
+			case 'y':
+				TD_render_flags ^= TD_RENDER_UNICODE;
+				break;
+			case 'g':
+				TD_render_flags = (TD_render_flags & (TD_RENDER_RGB | TD_RENDER_COLOR)) ? TD_RENDER_NO_COLOR : TD_RENDER_DEFAULT;
+				break;
+			case 'r':
+				TD_camera = TD_CameraDEFAULT;
 				break;
 			}
 		}
 		
 		// Applies movement
-		movement_vector = TD_Vec3_scale(movement_vector,deltaTime);
 		TD_Vec3 inverse_camera_rotation = (TD_Vec3){0.f,-TD_camera.rotation.y,0.f};
 		movement_vector = TD_Vec3_rotationZYX(&inverse_camera_rotation,&movement_vector);
 		TD_camera.position = TD_Vec3_add(TD_camera.position,movement_vector);
 
-		// Advance time
-		time += deltaTime;
-
-		// Update the FPS counter and deltaTime
-		deltaTime = TD_get_deltaTime(&last_frame);
-		FPS = TD_GET_FPS(deltaTime);
-		printf("FPS: %.f   \n",FPS);
-		TD_Vec3_print("pos: ",TD_camera.position);
-		TD_Vec3_print("rot: ",TD_Vec3_scale(TD_camera.rotation,180/3.1415f));
+		// Print information
+		printf("FPS: %.2f      \n",FPS);
+		printf("Controls: WASD to move, SPACE and C to go up and down, IJKL to look around. R to reset camera."
+				" T and Y to toggle rendering modes. G to toggle colors. CTRL+C to quit.\n");
 	}
 
 	TD_quit();

@@ -16,8 +16,8 @@ TD_SDL :
 
 //=============== Terminal implementation ===================
 
-// Include the terminal color header
-#include "td_color.h"
+// Include the terminal rendering header
+#include "td_render.h"
 
 // Char buffer for stdout (to improve performance)
 static char* TD_STDOUT_BUFFER = NULL;
@@ -45,8 +45,8 @@ TD_FUNC _Bool TD_init(unsigned int w, unsigned int h){
 	TD_SW = w;	// Set the screen properties
 	TD_SH = h;
 
-	TD_SW2 = w/2;	// Precalculate SW/2
-	TD_SH2 = h/2;	// 				SH/2
+	TD_SW2 = w/2;	//	Precalculate SW/2 and SH/2
+	TD_SH2 = h/2;
 
 	TD_ASPECT_RATIO = (float)TD_SW/(float)TD_SH; // Precalculate aspect ratio
 
@@ -137,7 +137,7 @@ TD_FUNC void TD_quit(void){
 
 TD_FUNC float TD_sample_depth(int x, int y){
 	if(x < 0 || y < 0 || x >= TD_SW || y >= TD_SH)
-		return TD_DEFAULT_DEPTH;
+		return TD_FAR_CLIP;
 	return TD_depth_buffer[y*TD_SW+x];
 }
 
@@ -166,17 +166,18 @@ TD_FUNC void TD_update_screen(void){
 	// Loop through each pixel pair in the color buffer
 	for(int y = 0; y < TD_SH-1; y += 2){
 		for(int x = 0; x < TD_SW; x++, uc++, bc++, depth_ptr++){
-			TD_COLOR_printchar(uc,bc);
+			TD_render_pixel(uc,bc);
 
 			// Clear current pixels
 			*uc = TD_background_color;
 			*bc = TD_background_color;
 		}
-		#ifndef TD_NO_COLOR
-		puts(TD_CLEAR_COLOR);
-		#else
-		putchar('\n');
-		#endif
+
+		if((TD_render_flags & TD_RENDER_COLOR) || (TD_render_flags & TD_RENDER_RGB))
+			puts(TD_CLEAR_COLOR);
+		else
+			putchar('\n');
+
 		uc += TD_SW;
 		bc += TD_SW;
 		depth_ptr += TD_SW;
@@ -190,7 +191,7 @@ TD_FUNC void TD_clear_buffers(void){
 	float* d = TD_depth_buffer;
 	for(long i = 0; i < TD_SW*TD_SH; i++, c++, d++){
 		*c = TD_BLACK;
-		*d = TD_DEFAULT_DEPTH;
+		*d = TD_FAR_CLIP;
 	}
 }
 

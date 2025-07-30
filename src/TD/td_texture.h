@@ -41,9 +41,9 @@ TD_FUNC TD_Color TD_sample_texture(float x, float y, TD_Texture* src){
 	// Loop the uv coordinates
 	x = fmod(x, 1.f);
 	y = fmod(y, 1.f);
-	int px = (int)(x*(float)src->width+0.5f);
-	int py = (int)(y*(float)src->height+0.5f);
-	return src->pixels[py*src->width+px];
+	int px = (int)floor(x*(float)src->width);
+	int py = (int)floor(y*(float)src->height);
+	return src->pixels[TD_CLAMP(py,0,src->height)*src->width+TD_CLAMP(px,0,src->width)];
 
 }
 

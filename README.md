@@ -28,21 +28,10 @@ its memory management and logging.
 Default is `memset` from `string.h`
 - `TD_LOG(fmt,...)` : Logs error / information, formatted. Default is `printf` from `stdio.h`.
 
-Furthermore, you have the choice to use either the Terminal implementation
-or the SDL implementation of this engine. To choose between the two, you need to
-define one of these macros before including `terdimension.h`.
-- `TD_TERMINAL` : Renders inside the terminal using characters simulating pixels.
-	- By default, TerDimension will render in **4-Bit Color** in Terminal implementation.
-	To enable **Full Color (RGB)**, you will need to define `TD_COLOR_RGB`.
-	- Using 4-Bit Color, you can edit `td_color.h` to change the color palette to fit your
-	current terminal, or disable bright colors if your terminal doesn't support them.
-	- This engine uses the upper half block character, which is unicode, but might not be
-	supported on every terminal, which is why you can define `TD_NO_UNICODE` to instead render
-	the scene with half of the resolution, but more support.
-	- To fully disable colors and instead render using ascii characters representing "densities"
-	(brightness), define `TD_NO_COLOR` before including `terdimension.h`.
-- `TD_SDL` : Renders inside a SDL window. You need to link SDL to your executable for
-this implementation to work. Check out `CMakeLists.txt` and the CMake docs.
+Furthermore, you can change the way the scene is rendered by setting "Render flags".
+These flags determine what techniques the renderer will use. You can combine these
+flags to customize fully how the scene is rendered. Look at `td_definitions.h` for
+more information.
 
 For the vertex winding order, you can set `TD_winding` to `TD_CW` for clockwise
 winding or `TD_CCW` for counter-clockwise.

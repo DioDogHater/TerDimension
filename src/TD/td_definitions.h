@@ -1,5 +1,5 @@
-#ifndef TD_DEFINITIONS_H
-#define TD_DEFINITIONS_H
+#ifndef TERDIMENSION_DEFINITIONS_H
+#define TERDIMENSION_DEFINITIONS_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -103,6 +103,15 @@ typedef struct{
 // Fragment shader (function)
 typedef TD_Color (*TD_Shader)(TD_ShaderInfo*);
 
+// Enum for render flags
+typedef enum{
+	TD_RENDER_RGB = 1,			// RGB Full Color, compatible with only some terminals
+	TD_RENDER_COLOR = 2,		// 4 bit color, combine with TD_RENDER_BRIGHT_COLORS for more colors
+	TD_RENDER_NO_COLOR = 0, 	// No color, just ASCII characters, full compatibility
+	TD_RENDER_UNICODE = 4,		// Render at twice the resolution, compatible with only some terminals
+	TD_RENDER_BRIGHT_COLORS = 8	// Only for 4 bit color, compatible with only some terminals
+} TD_RenderFlags;
+
 //========== Constants ===========
 
 // Colors
@@ -146,8 +155,16 @@ typedef TD_Color (*TD_Shader)(TD_ShaderInfo*);
 #define TD_CCW 0
 #define TD_CW 1
 
+// Default render flags
+#define TD_RENDER_DEFAULT (TD_RenderFlags)(TD_RENDER_RGB | TD_RENDER_UNICODE)
+#define TD_set_render_flags(f) ({TD_render_flags = (f);})
+
 // Default depth
-#define TD_DEFAULT_DEPTH 1000.f
+#define TD_FAR_CLIP 50.f
+#define TD_NEAR_CLIP 0.1f
+
+// No shader (more readable)
+#define TD_NO_SHADER NULL
 
 // Amount of bytes allocated per pixel for stdout buffer
 // 100 bytes per pixel takes about 1-2 MB for most resolutions and works well
@@ -189,6 +206,9 @@ TD_Color TD_background_color = TD_BLACK;
 
 // Clockwise or Counter-Clockwise
 bool TD_winding = TD_CCW;
+
+// Rendering flags
+TD_RenderFlags TD_render_flags = TD_RENDER_DEFAULT;
 
 // Current fragment shader used
 TD_Shader TD_shader = NULL;
