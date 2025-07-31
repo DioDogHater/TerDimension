@@ -168,7 +168,7 @@ typedef enum{
 
 // Amount of bytes allocated per pixel for stdout buffer
 // 100 bytes per pixel takes about 1-2 MB for most resolutions and works well
-#define TD_STDOUT_BYTES_PER_PIXEL 100
+#define TD_STDOUT_BYTES_PER_PIXEL 20
 
 // Function type
 #define TD_FUNC static inline

@@ -24,7 +24,7 @@ int main(void){
 
 	// Time variables
 	TD_time_t last_frame = TD_get_ticks();
-	float deltaTime = 0.f, FPS = 1.f;
+	float deltaTime = 0.f, FPS = 1.f;	
 
 	if(!TD_load_texture("assets/lebron_img.jpg",&lebron_texture))
 		exit(0);
@@ -39,6 +39,7 @@ int main(void){
 		// Update the FPS counter and deltaTime
 		deltaTime = TD_get_deltaTime(&last_frame);
 		FPS = TD_GET_FPS(deltaTime);
+		deltaTime = TD_CLAMP(deltaTime, 0.f, 1.f);
 
 		// Advance time
 		time += deltaTime;
@@ -125,7 +126,7 @@ int main(void){
 		TD_camera.position = TD_Vec3_add(TD_camera.position,movement_vector);
 
 		// Print information
-		printf("FPS: %.2f      \n",FPS);
+		printf("FPS: %.2f    Time: %.2f     \n",FPS,time);
 		printf("Controls: WASD to move, SPACE and C to go up and down, IJKL to look around. R to reset camera."
 				" T and Y to toggle rendering modes. G to toggle colors. CTRL+C to quit.\n");
 	}
