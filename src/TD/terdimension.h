@@ -137,7 +137,7 @@ TD_FUNC void TD_quit(void){
 
 TD_FUNC float TD_sample_depth(int x, int y){
 	if(x < 0 || y < 0 || x >= TD_SW || y >= TD_SH)
-		return TD_FAR_CLIP;
+		return TD_NEAR_CLIP;
 	return TD_depth_buffer[y*TD_SW+x];
 }
 

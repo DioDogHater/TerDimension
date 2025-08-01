@@ -262,8 +262,7 @@ TD_FUNC void TD_render_triangle(TD_Vec3 a, TD_Vec3 b, TD_Vec3 c, TD_Color* color
 		new_face.f = 1;
 		TD_render_triangle(c, b, d, colors, uvs, texture, normal, &new_face);
 		return;
-	}else
-		return;
+	}
 
 	// Apply simple perspective
 	a = TD_simple_perspective(&a);

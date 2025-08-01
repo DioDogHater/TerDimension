@@ -8,6 +8,7 @@
 // TD_DISABLE_INPUT - no input, only detect if CTRL+C or CTRL+Z are pressed
 
 #include "TD/td_definitions.h"
+#include "TD/td_raster.h"
 #include "TD/terdimension.h"
 #include "TD/td_time.h"
 
