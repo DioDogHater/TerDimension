@@ -36,7 +36,11 @@ TD_Color raymarch_shader(TD_ShaderInfo* si){
 		float d = raymarch_map(p);
 		t += d;
 		if(d < 0.01f)
-			return (TD_Color){(unsigned char)(t * 16.f + i * 8.f), (unsigned char)(t * 16.f + i * 8.f), (unsigned char)(t * 16.f + i * 8.f)};
+			return (TD_Color){
+				(unsigned char)(t * 16.f + (i * 8.f)),
+				(unsigned char)(t * 16.f + (i * 8.f)),
+				(unsigned char)(t * 16.f + (i * 8.f))
+			};
 		else if(d > 10.f)
 			return TD_WHITE;
 	}

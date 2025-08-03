@@ -4,11 +4,11 @@
 
 
 // Other options for TerDimension
+// To enable them, define them before "TD/terdimension.h"
 // TD_NO_TEXTURES - no textures, no stb_image.h
 // TD_DISABLE_INPUT - no input, only detect if CTRL+C or CTRL+Z are pressed
 
 #include "TD/td_definitions.h"
-#include "TD/td_raster.h"
 #include "TD/terdimension.h"
 #include "TD/td_time.h"
 
@@ -55,8 +55,8 @@ int main(void){
 		TD_use_shader(texture_shader);
 		TD_render_mesh(&textured_plane);
 
-		TD_use_shader(raymarch_shader);
-		TD_render_mesh(&raymarch_plane);
+		//TD_use_shader(raymarch_shader);
+		//TD_render_mesh(&raymarch_plane);
 
 		// Display changes
 		TD_update_screen();
@@ -107,7 +107,7 @@ int main(void){
 				TD_camera.rotation.y += PLAYER_LOOK;
 				break;
 			case 't':
-				TD_render_flags = ((TD_render_flags & TD_RENDER_RGB) ? TD_RENDER_COLOR : TD_RENDER_RGB) | (TD_render_flags & TD_RENDER_UNICODE);
+				TD_render_flags = ((TD_render_flags & TD_RENDER_RGB) ? TD_RENDER_COLOR | TD_RENDER_BRIGHT_COLORS : TD_RENDER_RGB) | (TD_render_flags & TD_RENDER_UNICODE);
 				break;
 			case 'y':
 				TD_render_flags ^= TD_RENDER_UNICODE;
@@ -117,6 +117,7 @@ int main(void){
 				break;
 			case 'r':
 				TD_camera = TD_CameraDEFAULT;
+				time = 0.f;
 				break;
 			}
 		}
