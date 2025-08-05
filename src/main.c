@@ -8,7 +8,7 @@
 // TD_NO_TEXTURES - no textures, no stb_image.h
 // TD_DISABLE_INPUT - no input, only detect if CTRL+C or CTRL+Z are pressed
 
-#include "TD/td_definitions.h"
+
 #include "TD/terdimension.h"
 #include "TD/td_obj.h"
 #include "TD/td_time.h"
@@ -17,7 +17,22 @@ float time = 0.f;
 
 #include "example_meshes.h"
 #include "example_shaders.h"
-#include "example_raymarching.h"
+
+// Uncomment this to use the raymarching demo
+//#include "example_raymarching.h"
+
+TD_Mesh monke_mesh;
+
+void load_resources(void){
+	if(	!TD_load_texture("assets/lebron_img.jpg",&lebron_texture) ||
+		!TD_load_obj("assets/monke_model/monke.obj",&monke_mesh))
+		exit(0);
+}
+
+void free_resources(void){
+	TD_free_texture(&lebron_texture);
+	TD_free_obj(&monke_mesh);
+}
 
 int main(void){
 	// Change the resolution
@@ -29,15 +44,8 @@ int main(void){
 	TD_time_t last_frame = TD_get_ticks();
 	float deltaTime = 0.f, FPS = 1.f;	
 	
-	// Load lebron's beautiful face
-	if(!TD_load_texture("assets/lebron_img.jpg",&lebron_texture))
-		exit(0);
-	
-	// Load the monkey mesh
-	TD_Mesh monke_mesh = TD_load_obj("assets/monke_model/monke.obj");
-	monke_mesh.transform.position = (TD_Vec3){0.f,1.f,2.f};
+	load_resources();
 
-	// Hide the text before
 	TD_clear_screen();
 
 	// Set rendering to default (change if you want something else)
@@ -64,10 +72,10 @@ int main(void){
 		TD_render_mesh(&textured_plane);
 		
 		// Render the monkey on screen (changes winding to Clockwise)
-		TD_winding = TD_CW;
+		TD_WIND_CW;
 		TD_use_shader(diffuse_texture_shader);
 		TD_render_mesh(&monke_mesh);
-		TD_winding = TD_CCW;
+		TD_WIND_CCW;
 		
 		// Uncomment to render raymarching demo
 		// (Might slow down rendering)
@@ -93,22 +101,22 @@ int main(void){
 				running = false;
 				break;
 			case 'w':
-				movement_vector.z = PLAYER_SPEED;
+				movement_vector.z += PLAYER_SPEED;
 				break;
 			case 's':
-				movement_vector.z = -PLAYER_SPEED;
+				movement_vector.z += -PLAYER_SPEED;
 				break;
 			case 'a':
-				movement_vector.x = -PLAYER_SPEED;
+				movement_vector.x += -PLAYER_SPEED;
 				break;
 			case 'd':
-				movement_vector.x = PLAYER_SPEED;
+				movement_vector.x += PLAYER_SPEED;
 				break;
 			case ' ':
-				movement_vector.y = PLAYER_SPEED;
+				movement_vector.y += PLAYER_SPEED;
 				break;
 			case 'c':
-				movement_vector.y = -PLAYER_SPEED;
+				movement_vector.y += -PLAYER_SPEED;
 				break;
 			case 'i':
 				TD_camera.rotation.x += PLAYER_LOOK;
@@ -150,9 +158,7 @@ int main(void){
 			" T and Y to toggle rendering modes. G to toggle colors. CTRL+C to quit.\n");
 	}
 	
-	// Free resources
-	TD_free_texture(&lebron_texture);
-	TD_destroy_obj(&monke_mesh);
+	free_resources();
 	
 	// Show cursor and clear screen
 	printf(TD_SHOW_CURSOR);

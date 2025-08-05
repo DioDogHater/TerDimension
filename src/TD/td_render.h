@@ -3,9 +3,7 @@
 
 #include "td_definitions.h"
 #include <math.h>
-
-#define TD_SET_4B_FOREGROUND "\x1b[%dm"
-#define TD_SET_4B_BACKGROUND "\x1b[%dm"
+#include <stdio.h>
 
 #define TD_SET_RGB_FOREGROUND "\033[38;2;%d;%d;%dm"
 #define TD_SET_RGB_BACKGROUND "\033[48;2;%d;%d;%dm"
@@ -63,23 +61,83 @@ TD_FUNC TD_4bit_color* TD_COLOR_GET(TD_Color c){
 static unsigned char TD_densities[] = " `````....---'':_,^=;><+!rc*/z?sLTv)J7(|Fi{C}fI31tlu[neoZ5Yxjya]2ESwqkP6h9d4V";
 #define TD_densities_count (sizeof(TD_densities)-1)
 
+TD_FUNC void TD_print_uchar(unsigned char c){
+	if(c >= 100){
+		putchar_unlocked('0'+(c/100));
+		c %= 100;
+		if(c < 10) putchar_unlocked('0');
+	}
+	if(c >= 10){
+		putchar_unlocked('0'+(c/10));
+		c %= 10;
+	}
+	putchar_unlocked('0'+(c));
+}
+
+TD_FUNC void TD_print4bit_full(unsigned char fgc, unsigned char bgc){
+	putchar_unlocked('\x1b');
+	putchar_unlocked('[');
+	TD_print_uchar(fgc);
+	putchar_unlocked('m');
+	putchar_unlocked('\x1b');
+	putchar_unlocked('[');
+	TD_print_uchar(bgc);
+	putchar_unlocked('m');
+	for(const char* unicode = TD_TOP_HALF_BLOCK_str; *unicode; unicode++){
+		putchar_unlocked(*unicode);
+	}
+}
+
+TD_FUNC void TD_print4bit_half(unsigned char bgc){
+	putchar_unlocked('\x1b');
+	putchar_unlocked('[');
+	TD_print_uchar(bgc);
+	putchar_unlocked('m');
+	putchar_unlocked(' ');
+}
+
+TD_FUNC void TD_printRGB(bool foreground, TD_Color* c){
+	putchar_unlocked('\x1b');
+	putchar_unlocked('[');
+	putchar_unlocked(foreground ? '3' : '4');
+	putchar_unlocked('8');
+	putchar_unlocked(';');
+	putchar_unlocked('2');
+	putchar_unlocked(';');
+	TD_print_uchar(c->r);
+	putchar_unlocked(';');
+	TD_print_uchar(c->g);
+	putchar_unlocked(';');
+	TD_print_uchar(c->b);
+	putchar_unlocked('m');
+}
+
+TD_FUNC void TD_printRGB_full(TD_Color* uc, TD_Color* bc){
+	TD_printRGB(true, uc);
+	TD_printRGB(false, bc);
+	for(const char* unicode = TD_TOP_HALF_BLOCK_str; *unicode; unicode++){
+		putchar_unlocked(*unicode);
+	}
+}
+
+TD_FUNC void TD_printRGB_half(TD_Color c){
+	TD_printRGB(false, &c);
+	putchar_unlocked(' ');
+}
+
 TD_FUNC void TD_render_pixel(TD_Color* uc, TD_Color* bc){
 	// 4-Bit color
 	if(TD_render_flags & TD_RENDER_COLOR){
 		// With unicode characters
 		if(TD_render_flags & TD_RENDER_UNICODE){
-			printf(
-				TD_SET_4B_FOREGROUND
-				TD_SET_4B_BACKGROUND
-				TD_TOP_HALF_BLOCK,
+			TD_print4bit_full(
 				TD_COLOR_GET(*uc)->fgc,
 				TD_COLOR_GET(*bc)->bgc
 			);
 		}
 		// Without unicode characters
 		else{
-			printf(
-				TD_SET_4B_BACKGROUND " ",
+			TD_print4bit_half(
 				TD_COLOR_GET((TD_Color){
 					(unsigned char)(((unsigned short)uc->r+(unsigned short)bc->r)>>1),
 					(unsigned char)(((unsigned short)uc->g+(unsigned short)bc->g)>>1),
@@ -92,20 +150,13 @@ TD_FUNC void TD_render_pixel(TD_Color* uc, TD_Color* bc){
 	else if(TD_render_flags & TD_RENDER_RGB){
 		// Change colors and print
 		if(TD_render_flags & TD_RENDER_UNICODE)
-			printf(
-				TD_SET_RGB_FOREGROUND
-				TD_SET_RGB_BACKGROUND
-				TD_TOP_HALF_BLOCK,
-				uc->r, uc->g, uc->b,
-				bc->r, bc->g, bc->b
-			);
+			TD_printRGB_full(uc, bc);
 		else{
-			printf(
-				TD_SET_RGB_BACKGROUND " ",
-				(uc->r+bc->r)>>1,
-				(uc->g+bc->g)>>1,
-				(uc->b+bc->b)>>1
-			);
+			TD_printRGB_half((TD_Color){
+				(unsigned char)(((unsigned short)uc->r+(unsigned short)bc->r)>>1),
+				(unsigned char)(((unsigned short)uc->g+(unsigned short)bc->g)>>1),
+				(unsigned char)(((unsigned short)uc->b+(unsigned short)bc->b)>>1)
+			});
 		}
 	}
 	// No color
@@ -119,7 +170,7 @@ TD_FUNC void TD_render_pixel(TD_Color* uc, TD_Color* bc){
 			) / 300.f * (float)(TD_densities_count);
 		else
 			density = 0.f;
-		putchar(TD_densities[TD_CLAMP(density,0,TD_densities_count)]);
+		putchar_unlocked(TD_densities[TD_CLAMP(density,0,TD_densities_count)]);
 	}
 }
 

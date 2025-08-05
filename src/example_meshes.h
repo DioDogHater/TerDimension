@@ -35,7 +35,8 @@ TD_Mesh multicolor_cube = (TD_Mesh){
 	NULL,
 	NULL,
 	// v = vertex index, c = color / uv index
-	// {v1,v2,v3, c1,c2,c3, normal index}
+	// n = normal index
+	// {v1,v2,v3, c1,c2,c3, n1,n2,3}
 	(TD_Face[]){
 		// Back
 		{2,1,0, 2,1,0, 0,0,0},

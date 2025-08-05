@@ -18,6 +18,7 @@ TD_SDL :
 
 // Include the terminal rendering header
 #include "td_render.h"
+#include <stdio.h>
 
 static bool TD_initialized = false;
 
@@ -169,10 +170,14 @@ TD_FUNC void TD_update_screen(void){
 			*bc = TD_background_color;
 		}
 
-		if((TD_render_flags & TD_RENDER_COLOR) || (TD_render_flags & TD_RENDER_RGB))
-			puts(TD_CLEAR_COLOR);
-		else
-			putchar('\n');
+		if((TD_render_flags & TD_RENDER_COLOR) || (TD_render_flags & TD_RENDER_RGB)){
+			putchar_unlocked('\x1b');
+			putchar_unlocked('[');
+			putchar_unlocked('0');
+			putchar_unlocked('m');
+			putchar_unlocked('\n');
+		}else
+			putchar_unlocked('\n');
 
 		uc += TD_SW;
 		bc += TD_SW;

@@ -168,7 +168,7 @@ typedef enum{
 
 // Amount of bytes allocated per pixel for stdout buffer
 // 100 bytes per pixel takes about 1-2 MB for most resolutions and works well
-#define TD_STDOUT_BYTES_PER_PIXEL 20
+#define TD_STDOUT_BYTES_PER_PIXEL 100
 
 // Function type
 #define TD_FUNC static inline
@@ -206,6 +206,8 @@ TD_Color TD_background_color = TD_BLACK;
 
 // Clockwise or Counter-Clockwise
 bool TD_winding = TD_CCW;
+#define TD_WIND_CW TD_winding = TD_CW
+#define TD_WIND_CCW TD_winding = TD_CCW
 
 // Rendering flags
 TD_RenderFlags TD_render_flags = TD_RENDER_DEFAULT;
@@ -215,7 +217,8 @@ TD_Shader TD_shader = NULL;
 #define TD_use_shader(f) TD_shader = (f)
 
 // Constants for rendering
-#define TD_TOP_HALF_BLOCK	"\u2580"
+const char* TD_TOP_HALF_BLOCK_str = "\u2580";
+#define TD_TOP_HALF_BLOCK "\u2580"
 #define TD_CLEAR_COLOR		"\033[0m"
 #define TD_CLEAR_TERMINAL	"\e[1;1H\e[2J"
 #define TD_HIDE_CURSOR		"\e[?25l"
