@@ -52,8 +52,8 @@ typedef struct {
 // Triangle face
 typedef struct {
 	unsigned int a, b, c;	// Indices of vertices
-	unsigned int d, e, f;	// Indices of colors / uvs
-	unsigned int normal;	// Index of the normal vector in the model
+	unsigned int d, e, f;	// Indices of vertex attributes
+	unsigned int n1, n2, n3;// Indices of vertex normals
 } TD_Face;
 
 // Colors
@@ -223,6 +223,5 @@ TD_Shader TD_shader = NULL;
 
 // Macros for rendering
 #define TD_MOVE_CURSOR(x,y) printf("\033[%d;%dH", (y), (x))
-TD_FUNC void  TD_clear_screen() { printf(TD_CLEAR_TERMINAL); }
 
 #endif

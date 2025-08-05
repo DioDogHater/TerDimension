@@ -5,7 +5,7 @@ set(CMAKE_C_STANDARD 11)
 #set(CMAKE_BUILD_TYPE "Debug")
 
 # To enable profiling
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pg")
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pg")
 
 # To maximise performance at the cost of compilation speed
 #set(CMAKE_BUILD_TYPE "Release")

@@ -19,6 +19,8 @@ TD_SDL :
 // Include the terminal rendering header
 #include "td_render.h"
 
+static bool TD_initialized = false;
+
 // Char buffer for stdout (to improve performance)
 static char* TD_STDOUT_BUFFER = NULL;
 
@@ -58,7 +60,7 @@ TD_FUNC _Bool TD_init(unsigned int w, unsigned int h){
 	// Check if memory successfully allocated
 	if(TD_frame_buffer == NULL){
 		TD_LOG("Failed to allocate frame buffer with size: %lu\n",(size_t)(sizeof(TD_Color)*w*h));
-		return 0;
+		return false;
 	}
 
 	// Allocate depth buffer
@@ -69,7 +71,7 @@ TD_FUNC _Bool TD_init(unsigned int w, unsigned int h){
 	// Check if memory successfully allocated
 	if(TD_depth_buffer == NULL){
 		TD_LOG("Failed to allocate depth buffer with size: %lu\n",(size_t)(sizeof(float)*w*h));
-		return 0;
+		return false;
 	}
 
 	// Allocate stdout buffer
@@ -80,7 +82,7 @@ TD_FUNC _Bool TD_init(unsigned int w, unsigned int h){
 	// Memory check
 	if(TD_STDOUT_BUFFER == NULL){
 		TD_LOG("Failed to allocate STDOUT buffer with size: %lu\n",(size_t)(w*h*TD_STDOUT_BYTES_PER_PIXEL));
-		return 0;
+		return false;
 	}
 
 	// Fill buffers with zeros
@@ -95,30 +97,24 @@ TD_FUNC _Bool TD_init(unsigned int w, unsigned int h){
 	printf(TD_HIDE_CURSOR);
 
 	// Register TD_quit as a function to run when program exits
-	atexit(TD_quit);
+	if(!TD_initialized)
+		atexit(TD_quit);
 
 	// Initialize input (or not input)
 	TD_INPUT_INIT();
+	
+	TD_initialized = true;
 
 	// Return "success"
-	return 1;
+	return true;
 }
 
 TD_FUNC void TD_quit(void){
+	if(!TD_initialized) return;
+	TD_initialized = false;
+	
 	// Quit input
 	TD_INPUT_QUIT();
-
-	// Clear the terminal
-	printf(TD_CLEAR_COLOR TD_CLEAR_TERMINAL);
-
-	// Make cursor visible again
-	printf(TD_SHOW_CURSOR);
-
-	// Flush stdout one last time
-	fflush(stdout);
-
-	// Set stdout's buffering to be line buffering
-	setvbuf(stdout,NULL,_IOLBF,0);
 
 	TD_SW = 0;	// Set the screen to be 0x0 px
 	TD_SH = 0;
@@ -183,6 +179,11 @@ TD_FUNC void TD_update_screen(void){
 		depth_ptr += TD_SW;
 	}
 	// Flush the buffer into stdout
+	fflush(stdout);
+}
+
+TD_FUNC void TD_clear_screen(){
+	printf(TD_CLEAR_TERMINAL);
 	fflush(stdout);
 }
 

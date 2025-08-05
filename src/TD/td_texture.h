@@ -9,7 +9,7 @@
 #include "../stb_image.h"
 
 // Loads texture using stb_image
-TD_FUNC _Bool TD_load_texture(char* filename, TD_Texture* dest){
+TD_FUNC bool TD_load_texture(char* filename, TD_Texture* dest){
 	int width, height, channels = 3;
 	stbi_set_flip_vertically_on_load(1);
 	unsigned char* img = stbi_load(filename,&width,&height,&channels,3);
@@ -37,7 +37,7 @@ TD_FUNC void TD_free_texture(TD_Texture* dest){
 
 // Sample a pixel on a texture
 TD_FUNC TD_Color TD_sample_texture(float x, float y, TD_Texture* src){
-	if(!src) return TD_BLACK;
+	if(!src) return TD_WHITE;
 	// Loop the uv coordinates
 	x = fmod(x, 1.f);
 	y = fmod(y, 1.f);

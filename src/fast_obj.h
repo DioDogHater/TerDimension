@@ -1434,6 +1434,37 @@ void fast_obj_destroy(fastObjMesh* m)
     memory_dealloc(m);
 }
 
+// Modification DioDogHater made to this header
+// --------
+void fast_obj_destroy_TD(fastObjMesh* m)
+{
+    unsigned int ii;
+    
+    for (ii = 0; ii < array_size(m->objects); ii++)
+        object_clean(&m->objects[ii]);
+    
+    for (ii = 0; ii < array_size(m->groups); ii++)
+        group_clean(&m->groups[ii]);
+    
+    for (ii = 0; ii < array_size(m->materials); ii++)
+        mtl_clean(&m->materials[ii]);
+    
+    for (ii = 0; ii < array_size(m->textures); ii++)
+        map_clean(&m->textures[ii]);
+    
+    array_clean(m->colors);
+    array_clean(m->face_vertices);
+    array_clean(m->face_materials);
+    array_clean(m->face_lines);
+    array_clean(m->indices);
+    array_clean(m->objects);
+    array_clean(m->groups);
+    array_clean(m->materials);
+    array_clean(m->textures);
+    
+    memory_dealloc(m);
+}
+// --------
 
 fastObjMesh* fast_obj_read(const char* path)
 {

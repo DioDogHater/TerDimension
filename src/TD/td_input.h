@@ -21,7 +21,7 @@ static void TD_die(const char* msg){
 struct termios TD_og_termios;
 
 TD_FUNC void TD_disable_raw_mode(){
-	// Restor the original mode
+	// Restore the original mode
 	if(tcsetattr(STDIN_FILENO,TCSAFLUSH,&TD_og_termios) == -1)
 		TD_die("tcsetattr (TD_disable_raw_mode)");
 }

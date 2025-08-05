@@ -10,11 +10,13 @@
 
 #include "TD/td_definitions.h"
 #include "TD/terdimension.h"
+#include "TD/td_obj.h"
 #include "TD/td_time.h"
 
 float time = 0.f;
 
 #include "example_meshes.h"
+#include "example_shaders.h"
 #include "example_raymarching.h"
 
 int main(void){
@@ -26,9 +28,14 @@ int main(void){
 	// Time variables
 	TD_time_t last_frame = TD_get_ticks();
 	float deltaTime = 0.f, FPS = 1.f;	
-
+	
+	// Load lebron's beautiful face
 	if(!TD_load_texture("assets/lebron_img.jpg",&lebron_texture))
 		exit(0);
+	
+	// Load the monkey mesh
+	TD_Mesh monke_mesh = TD_load_obj("assets/monke_model/monke.obj");
+	monke_mesh.transform.position = (TD_Vec3){0.f,1.f,2.f};
 
 	// Hide the text before
 	TD_clear_screen();
@@ -36,7 +43,8 @@ int main(void){
 	// Set rendering to default (change if you want something else)
 	TD_set_render_flags(TD_RENDER_DEFAULT);
 
-	while(1){
+	bool running = true;
+	while(running){
 		// Update the FPS counter and deltaTime
 		deltaTime = TD_get_deltaTime(&last_frame);
 		FPS = TD_GET_FPS(deltaTime);
@@ -48,13 +56,21 @@ int main(void){
 		TD_clear_buffers();
 
 		// Render the cube on screen
-		TD_use_shader(diffuse_lighting_shader);
+		TD_use_shader(diffuse_color_shader);
 		TD_render_mesh(&multicolor_cube);
 
 		// Render the textured plane on screen
 		TD_use_shader(texture_shader);
 		TD_render_mesh(&textured_plane);
-
+		
+		// Render the monkey on screen (changes winding to Clockwise)
+		TD_winding = TD_CW;
+		TD_use_shader(diffuse_texture_shader);
+		TD_render_mesh(&monke_mesh);
+		TD_winding = TD_CCW;
+		
+		// Uncomment to render raymarching demo
+		// (Might slow down rendering)
 		//TD_use_shader(raymarch_shader);
 		//TD_render_mesh(&raymarch_plane);
 
@@ -74,8 +90,8 @@ int main(void){
 		while(TD_get_input(&c)){
 			switch(c){
 			case TD_CTRL_C:
-				TD_free_texture(&lebron_texture);
-				exit(0);
+				running = false;
+				break;
 			case 'w':
 				movement_vector.z = PLAYER_SPEED;
 				break;
@@ -107,7 +123,8 @@ int main(void){
 				TD_camera.rotation.y += PLAYER_LOOK;
 				break;
 			case 't':
-				TD_render_flags = ((TD_render_flags & TD_RENDER_RGB) ? TD_RENDER_COLOR | TD_RENDER_BRIGHT_COLORS : TD_RENDER_RGB) | (TD_render_flags & TD_RENDER_UNICODE);
+				TD_render_flags = ((TD_render_flags & TD_RENDER_RGB) ? TD_RENDER_COLOR | TD_RENDER_BRIGHT_COLORS : TD_RENDER_RGB) |
+									(TD_render_flags & TD_RENDER_UNICODE);
 				break;
 			case 'y':
 				TD_render_flags ^= TD_RENDER_UNICODE;
@@ -130,8 +147,19 @@ int main(void){
 		// Print information
 		printf("FPS: %.2f    Time: %.2f     \n",FPS,time);
 		printf("Controls: WASD to move, SPACE and C to go up and down, IJKL to look around. R to reset camera."
-				" T and Y to toggle rendering modes. G to toggle colors. CTRL+C to quit.\n");
+			" T and Y to toggle rendering modes. G to toggle colors. CTRL+C to quit.\n");
 	}
-
+	
+	// Free resources
+	TD_free_texture(&lebron_texture);
+	TD_destroy_obj(&monke_mesh);
+	
+	// Show cursor and clear screen
+	printf(TD_SHOW_CURSOR);
+	TD_clear_screen();
+	
+	// Quit TerDimension
 	TD_quit();
+	
+	return 0;
 }

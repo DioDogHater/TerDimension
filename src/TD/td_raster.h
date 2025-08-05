@@ -32,10 +32,10 @@ TD_FUNC TD_Vec3 TD_to_world(int x, int y){
 // Get bounds of a triangle
 TD_FUNC TD_Bounds TD_triangle_bounds(TD_Vec2i a, TD_Vec2i b, TD_Vec2i c){
 	return (TD_Bounds){
-		(int)TD_MAX(TD_MIN(a.x,TD_MIN(b.x,c.x)),0),
-		(int)TD_MIN(TD_MAX(a.x,TD_MAX(b.x,c.x)),TD_SW),
-		(int)TD_MAX(TD_MIN(a.y,TD_MIN(b.y,c.y)),0),
-		(int)TD_MIN(TD_MAX(a.y,TD_MAX(b.y,c.y)),TD_SH)
+		(int)TD_CLAMP(TD_MIN(a.x,TD_MIN(b.x,c.x)),0,TD_SW),
+		(int)TD_CLAMP(TD_MAX(a.x,TD_MAX(b.x,c.x)),0,TD_SW),
+		(int)TD_CLAMP(TD_MIN(a.y,TD_MIN(b.y,c.y)),0,TD_SH),
+		(int)TD_CLAMP(TD_MAX(a.y,TD_MAX(b.y,c.y)),0,TD_SH)
 	};
 }
 
@@ -99,9 +99,17 @@ TD_FUNC TD_Vec2 TD_interpolate_2_vec2(TD_Vec2* a, TD_Vec2* b, float u){
 #define TD_SHOULD_CLIP1(_a, _b, _c) ((_a).z < TD_NEAR_CLIP && (_b).z >= TD_NEAR_CLIP && (_c).z >= TD_NEAR_CLIP)
 
 TD_FUNC void TD_render_triangle(TD_Vec3 a, TD_Vec3 b, TD_Vec3 c, TD_Color* colors, TD_Vec2* uvs, TD_Texture* texture, TD_Vec3* normal, TD_Face* f){
-	// Cull face if it's partially behind camera
+	// Cull face if it's not in the frustum
+	if(	(a.x > a.z && b.x > b.z && c.x > c.z) ||
+		(-a.x > a.z && -b.x > b.z && -c.x > c.z) ||
+		(a.y > a.z && b.y > b.z && c.y > c.z) ||
+		(-a.y > a.z && -b.y > b.z && -c.y > c.z)
+	)
+		return;
+	
+	// Cull face if it's behind camera
 	if(a.z >= TD_NEAR_CLIP && b.z >= TD_NEAR_CLIP && c.z >= TD_NEAR_CLIP);
-	else if(a.z < TD_NEAR_CLIP && b.z < TD_NEAR_CLIP && c.z < TD_NEAR_CLIP){
+	else if((a.z < TD_NEAR_CLIP && b.z < TD_NEAR_CLIP && c.z < TD_NEAR_CLIP)){
 		return;
 	}else if(TD_SHOULD_CLIP2(a, b, c)){
 		float a_u = TD_clip_edge(&a, &c);
@@ -277,7 +285,7 @@ TD_FUNC void TD_render_triangle(TD_Vec3 a, TD_Vec3 b, TD_Vec3 c, TD_Color* color
 	TD_Bounds bounds = TD_triangle_bounds(TD_to_screen(&a),TD_to_screen(&b),TD_to_screen(&c));
 
 	// If the bounding rect is not valid, dont render
-	if(bounds.xmax - bounds.xmin <= 0 || bounds.ymax - bounds.ymin <= 0)
+	if(bounds.xmax - bounds.xmin <= 0 || bounds.xmax - bounds.xmin > TD_SW || bounds.ymax - bounds.ymin <= 0 || bounds.ymax - bounds.ymin > TD_SH)
 		return;
 
 	float area = TD_edge_function(&a,&b,&c);
@@ -361,8 +369,14 @@ TD_FUNC void TD_render_face(TD_Mesh* m, TD_Face* f){
 
 	// Rotated normal
 	TD_Vec3 normal;
-	if(m->normals)
-		normal = TD_Vec3_rotationZYX(&m->transform.rotation, &m->normals[f->normal]);
+	if(m->normals){
+		normal = (TD_Vec3){
+			(m->normals[f->n1].x + m->normals[f->n2].x + m->normals[f->n3].x) / 3.f,
+			(m->normals[f->n1].y + m->normals[f->n2].y + m->normals[f->n3].y) / 3.f,
+			(m->normals[f->n1].z + m->normals[f->n2].z + m->normals[f->n3].z) / 3.f
+		};
+		normal = TD_Vec3_rotationZYX(&m->transform.rotation,&normal);
+	}
 
 	TD_render_triangle(a, b, c, m->colors, m->uvs, m->texture, (m->normals) ? &normal : NULL, f);
 }
