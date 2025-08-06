@@ -44,6 +44,10 @@ TD_FUNC TD_Vec3 TD_Vec3_div_scale(TD_Vec3 a, float b){
 TD_FUNC float TD_Vec3_magnitude(TD_Vec3 v){
 	return sqrt(TD_Vec3_dot(v,v));
 }
+TD_FUNC float TD_Vec3_distance_squared(TD_Vec3 a, TD_Vec3 b){
+	TD_Vec3 v = TD_Vec3_sub(a, b);
+	return TD_Vec3_dot(v,v);
+}
 TD_FUNC TD_Vec3 TD_Vec3_normalize(TD_Vec3 v){
 	float m = TD_Vec3_magnitude(v);
 	if(m == 0.f)

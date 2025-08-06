@@ -18,7 +18,6 @@ TD_SDL :
 
 // Include the terminal rendering header
 #include "td_render.h"
-#include <stdio.h>
 
 static bool TD_initialized = false;
 
@@ -94,8 +93,9 @@ TD_FUNC _Bool TD_init(unsigned int w, unsigned int h){
 	// Set the stdout buffer to TD_STDOUT_BUFFER
 	setvbuf(stdout,TD_STDOUT_BUFFER,_IOFBF,w*h*TD_STDOUT_BYTES_PER_PIXEL);
 
-	// Hide cursor
-	printf(TD_HIDE_CURSOR);
+	// Hide cursor and reset colors to their defaults
+	printf(TD_HIDE_CURSOR "\x1b[39;49m");
+	fflush(stdout);
 
 	// Register TD_quit as a function to run when program exits
 	if(!TD_initialized)
@@ -152,22 +152,15 @@ TD_FUNC void TD_set_pixel(int x, int y, TD_Color c){
 
 TD_FUNC void TD_update_screen(void){
 	// Move cursor to top left of screen
-	TD_MOVE_CURSOR(1,1);
+	TD_MOVE_CURSOR(0,0);
 
 	// Pointer to current Upper-Color and Bottom-Color
 	TD_Color *uc = TD_frame_buffer, *bc = TD_frame_buffer+TD_SW;
 
-	// Pointer to current depth buffer pixel
-	float* depth_ptr = TD_depth_buffer;
-
 	// Loop through each pixel pair in the color buffer
 	for(int y = 0; y < TD_SH-1; y += 2){
-		for(int x = 0; x < TD_SW; x++, uc++, bc++, depth_ptr++){
+		for(int x = 0; x < TD_SW; x++, uc++, bc++){
 			TD_render_pixel(uc,bc);
-
-			// Clear current pixels
-			*uc = TD_background_color;
-			*bc = TD_background_color;
 		}
 
 		if((TD_render_flags & TD_RENDER_COLOR) || (TD_render_flags & TD_RENDER_RGB)){
@@ -181,7 +174,6 @@ TD_FUNC void TD_update_screen(void){
 
 		uc += TD_SW;
 		bc += TD_SW;
-		depth_ptr += TD_SW;
 	}
 	// Flush the buffer into stdout
 	fflush(stdout);
@@ -193,10 +185,11 @@ TD_FUNC void TD_clear_screen(){
 }
 
 TD_FUNC void TD_clear_buffers(void){
+	TD_Color fill_value = (TD_render_flags & (TD_RENDER_COLOR | TD_RENDER_RGB)) ? TD_background_color : TD_BLACK;
 	TD_Color* c = TD_frame_buffer;
 	float* d = TD_depth_buffer;
 	for(long i = 0; i < TD_SW*TD_SH; i++, c++, d++){
-		*c = TD_BLACK;
+		*c = fill_value;
 		*d = TD_FAR_CLIP;
 	}
 }

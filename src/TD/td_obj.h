@@ -27,7 +27,7 @@ TD_FUNC bool TD_load_obj(const char* filepath, TD_Mesh* result){
 		(TD_Vec2*) obj->texcoords,
 		NULL, NULL,
 		obj->face_count,
-		TD_TransformIDENTITY
+		result->transform
 	};
 	
 	// Allocate memory for faces

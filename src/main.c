@@ -9,6 +9,7 @@
 // TD_DISABLE_INPUT - no input, only detect if CTRL+C or CTRL+Z are pressed
 
 
+#include "TD/td_definitions.h"
 #include "TD/terdimension.h"
 #include "TD/td_obj.h"
 #include "TD/td_time.h"
@@ -21,7 +22,11 @@ float time = 0.f;
 // Uncomment this to use the raymarching demo
 //#include "example_raymarching.h"
 
-TD_Mesh monke_mesh;
+TD_Mesh monke_mesh = (TD_Mesh){.transform = {
+	(TD_Vec3){2.f, 0.f, 3.f},
+	TD_Vec3ZERO,
+	TD_Vec3IDENTITY
+}};
 
 void load_resources(void){
 	if(	!TD_load_texture("assets/lebron_img.jpg",&lebron_texture) ||
@@ -50,6 +55,9 @@ int main(void){
 
 	// Set rendering to default (change if you want something else)
 	TD_set_render_flags(TD_RENDER_DEFAULT);
+	TD_background_color = (TD_Color){25,128,255};
+	
+	bool paused = false;
 
 	bool running = true;
 	while(running){
@@ -57,6 +65,9 @@ int main(void){
 		deltaTime = TD_get_deltaTime(&last_frame);
 		FPS = TD_GET_FPS(deltaTime);
 		deltaTime = TD_CLAMP(deltaTime, 0.f, 1.f);
+		
+		if(paused)
+			deltaTime = 0.f;
 
 		// Advance time
 		time += deltaTime;
@@ -144,6 +155,9 @@ int main(void){
 				TD_camera = TD_CameraDEFAULT;
 				time = 0.f;
 				break;
+			case 'p':
+				paused ^= true;
+				break;
 			}
 		}
 		
@@ -154,8 +168,8 @@ int main(void){
 
 		// Print information
 		printf("FPS: %.2f    Time: %.2f     \n",FPS,time);
-		printf("Controls: WASD to move, SPACE and C to go up and down, IJKL to look around. R to reset camera."
-			" T and Y to toggle rendering modes. G to toggle colors. CTRL+C to quit.\n");
+		printf("Controls: WASD to move, SPACE and C to go up and down, IJKL to look around. R to reset, P to pause."
+			" T and Y to toggle rendering modes, G to toggle colors. CTRL+C to quit.\n");
 	}
 	
 	free_resources();
