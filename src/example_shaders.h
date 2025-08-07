@@ -4,9 +4,9 @@
 #include "TD/terdimension.h"
 
 // Light source
-#define LIGHT_SOURCE (TD_Vec3){10.f,10.f,-10.f}
-#define DIFFUSE 0.8f
-#define AMBIENT 0.2f
+#define LIGHT_SOURCE (TD_Vec3){20.f,100.f,-100.f}
+#define DIFFUSE 0.6f
+#define AMBIENT 0.4f
 
 // Fragment shaders
 TD_Color diffuse_color_shader(TD_ShaderInfo* si){

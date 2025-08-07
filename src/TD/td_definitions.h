@@ -21,6 +21,10 @@
 #define TD_MEMSET(ptr,c,sz) memset((ptr),(c),(sz));
 #endif
 
+#ifndef TD_REALLOC
+#define TD_REALLOC(ptr,sz) realloc((ptr),(sz))
+#endif
+
 // Logging macro (prints by default)
 #ifndef TD_LOG
 #define TD_LOG(fmt,...) printf("TD_LOG: " fmt,##__VA_ARGS__);
@@ -84,7 +88,7 @@ typedef struct {
 	TD_Color* colors;
 	TD_Vec3* normals;
 	TD_Vec2* uvs;
-	TD_Texture* texture;
+	TD_Texture texture;
 	TD_Face* faces;
 	size_t face_count;
 	TD_Transform transform;
@@ -171,7 +175,7 @@ typedef enum{
 #define TD_STDOUT_BYTES_PER_PIXEL 100
 
 // Function type
-#define TD_FUNC static inline
+#define TD_FUNC extern
 
 //===== Function prototypes ======
 
@@ -188,43 +192,37 @@ TD_FUNC void TD_clear_buffers(void);
 
 // Screen width / height
 // DO NOT CHANGE MANUALLY (will cause segfault)
-unsigned int TD_SW = 0;
-unsigned int TD_SH = 0;
+extern unsigned int TD_SW;
+extern unsigned int TD_SH;
 
 // Precalculated halves of SW and SH
-unsigned int TD_SW2 = 0;
-unsigned int TD_SH2 = 0;
+extern unsigned int TD_SW2;
+extern unsigned int TD_SH2;
 
 // Precalculated aspect ratio
-float TD_ASPECT_RATIO = 1.f;
+extern float TD_ASPECT_RATIO;
 
 // Camera
-TD_Camera TD_camera = TD_CameraDEFAULT;
+extern TD_Camera TD_camera;
 
 // Background color
-TD_Color TD_background_color = TD_BLACK;
+extern TD_Color TD_background_color;
 
 // Clockwise or Counter-Clockwise
-bool TD_winding = TD_CCW;
+extern bool TD_winding;
 #define TD_WIND_CW TD_winding = TD_CW
 #define TD_WIND_CCW TD_winding = TD_CCW
 
 // Rendering flags
-TD_RenderFlags TD_render_flags = TD_RENDER_DEFAULT;
+extern TD_RenderFlags TD_render_flags;
 
 // Current fragment shader used
-TD_Shader TD_shader = NULL;
+extern TD_Shader TD_shader;
 #define TD_use_shader(f) TD_shader = (f)
 
-// Constants for rendering
-const char* TD_TOP_HALF_BLOCK_str = "\u2580";
-#define TD_TOP_HALF_BLOCK "\u2580"
-#define TD_CLEAR_COLOR		"\033[0m"
-#define TD_CLEAR_TERMINAL	"\e[1;1H\e[2J"
-#define TD_HIDE_CURSOR		"\e[?25l"
-#define TD_SHOW_CURSOR		"\e[?25h"
-
-// Macros for rendering
+// Macros for printing text
 #define TD_MOVE_CURSOR(x,y) printf("\033[%d;%dH", (y), (x))
+#define TD_PRINT(x,y,txt,...) ({TD_MOVE_CURSOR((x),(y)); printf((txt),##__VA_ARGS__);})
+#define TD_UPDATE_TEXT() fflush(stdout)
 
 #endif

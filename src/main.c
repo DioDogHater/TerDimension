@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <SDL2/SDL.h>
 
 
 // Other options for TerDimension
@@ -8,8 +9,6 @@
 // TD_NO_TEXTURES - no textures, no stb_image.h
 // TD_DISABLE_INPUT - no input, only detect if CTRL+C or CTRL+Z are pressed
 
-
-#include "TD/td_definitions.h"
 #include "TD/terdimension.h"
 #include "TD/td_obj.h"
 #include "TD/td_time.h"
@@ -28,15 +27,52 @@ TD_Mesh monke_mesh = (TD_Mesh){.transform = {
 	TD_Vec3IDENTITY
 }};
 
+TD_Mesh spaceship = (TD_Mesh){.transform = {
+	(TD_Vec3){0.f, 0.f, -15.f},
+	(TD_Vec3){0.f, TD_to_rad(-90.f), 0.f},
+	TD_Vec3IDENTITY
+}};
+
+TD_Mesh castle = (TD_Mesh){.transform = {
+	(TD_Vec3){0.f, -5.f, 10.f},
+	TD_Vec3ZERO,
+	(TD_Vec3){5.f,5.f,5.f}
+}};
+
 void load_resources(void){
-	if(	!TD_load_texture("assets/lebron_img.jpg",&lebron_texture) ||
-		!TD_load_obj("assets/monke_model/monke.obj",&monke_mesh))
-		exit(0);
+	if(
+		!TD_load_texture("assets/lebron_img.jpg",&textured_plane.texture) ||
+		!TD_load_obj("assets/monke_model/monke.obj",&monke_mesh) ||
+		!TD_load_obj("assets/spaceship/spaceship.obj",&spaceship) ||
+		!TD_load_obj("assets/peachscastle/peachscastle.obj",&castle)
+	) exit(0);
 }
 
 void free_resources(void){
-	TD_free_texture(&lebron_texture);
+	TD_free_texture(&textured_plane.texture);
 	TD_free_obj(&monke_mesh);
+	TD_free_obj(&spaceship);
+	TD_free_obj(&castle);
+}
+
+void render(void){
+	// Render the cube on screen (changes winding to Counter-Clockwise)
+	TD_WIND_CCW;
+	TD_use_shader(diffuse_color_shader);
+	TD_render_mesh(&multicolor_cube);
+
+	// Render the textured plane on screen
+	TD_use_shader(texture_shader);
+	TD_render_mesh(&textured_plane);
+
+	// Render the monkey on screen (changes winding to Clockwise)
+	TD_WIND_CW;
+	TD_use_shader(diffuse_texture_shader);
+	TD_render_mesh(&monke_mesh);
+
+	TD_render_mesh(&spaceship);
+
+	TD_render_mesh(&castle);
 }
 
 int main(void){
@@ -47,16 +83,15 @@ int main(void){
 
 	// Time variables
 	TD_time_t last_frame = TD_get_ticks();
-	float deltaTime = 0.f, FPS = 1.f;	
-	
+	float deltaTime = 0.f, FPS = 1.f;
+
 	load_resources();
 
 	TD_clear_screen();
 
-	// Set rendering to default (change if you want something else)
-	TD_set_render_flags(TD_RENDER_DEFAULT);
+	// Background is sky blue color
 	TD_background_color = (TD_Color){25,128,255};
-	
+
 	bool paused = false;
 
 	bool running = true;
@@ -64,8 +99,9 @@ int main(void){
 		// Update the FPS counter and deltaTime
 		deltaTime = TD_get_deltaTime(&last_frame);
 		FPS = TD_GET_FPS(deltaTime);
-		deltaTime = TD_CLAMP(deltaTime, 0.f, 1.f);
-		
+		deltaTime = TD_CLAMP(deltaTime, 0.0001f, 1.f);
+
+		// If the game is paused, don't advance time
 		if(paused)
 			deltaTime = 0.f;
 
@@ -74,20 +110,8 @@ int main(void){
 
 		TD_clear_buffers();
 
-		// Render the cube on screen
-		TD_use_shader(diffuse_color_shader);
-		TD_render_mesh(&multicolor_cube);
+		render();
 
-		// Render the textured plane on screen
-		TD_use_shader(texture_shader);
-		TD_render_mesh(&textured_plane);
-		
-		// Render the monkey on screen (changes winding to Clockwise)
-		TD_WIND_CW;
-		TD_use_shader(diffuse_texture_shader);
-		TD_render_mesh(&monke_mesh);
-		TD_WIND_CCW;
-		
 		// Uncomment to render raymarching demo
 		// (Might slow down rendering)
 		//TD_use_shader(raymarch_shader);
@@ -103,7 +127,7 @@ int main(void){
 		// Handle input
 		// If you wish to disable input, please omit this part of the code
 		#define PLAYER_SPEED 0.25f
-		#define PLAYER_LOOK 0.05f
+		#define PLAYER_LOOK 0.1f
 		char c;
 		TD_Vec3 movement_vector = TD_Vec3ZERO;
 		while(TD_get_input(&c)){
@@ -142,8 +166,11 @@ int main(void){
 				TD_camera.rotation.y += PLAYER_LOOK;
 				break;
 			case 't':
-				TD_render_flags = ((TD_render_flags & TD_RENDER_RGB) ? TD_RENDER_COLOR | TD_RENDER_BRIGHT_COLORS : TD_RENDER_RGB) |
-									(TD_render_flags & TD_RENDER_UNICODE);
+				TD_render_flags = (
+					(TD_render_flags & TD_RENDER_RGB) ?
+					TD_RENDER_COLOR | TD_RENDER_BRIGHT_COLORS :
+					TD_RENDER_RGB) | (TD_render_flags & TD_RENDER_UNICODE
+				);
 				break;
 			case 'y':
 				TD_render_flags ^= TD_RENDER_UNICODE;
@@ -160,7 +187,7 @@ int main(void){
 				break;
 			}
 		}
-		
+
 		// Applies movement
 		TD_Vec3 inverse_camera_rotation = (TD_Vec3){0.f,-TD_camera.rotation.y,0.f};
 		movement_vector = TD_Vec3_rotationZYX(&inverse_camera_rotation,&movement_vector);
@@ -171,15 +198,15 @@ int main(void){
 		printf("Controls: WASD to move, SPACE and C to go up and down, IJKL to look around. R to reset, P to pause."
 			" T and Y to toggle rendering modes, G to toggle colors. CTRL+C to quit.\n");
 	}
-	
+
 	free_resources();
-	
+
 	// Show cursor and clear screen
 	printf(TD_SHOW_CURSOR);
 	TD_clear_screen();
-	
+
 	// Quit TerDimension
 	TD_quit();
-	
+
 	return 0;
 }

@@ -1,10 +1,8 @@
 #ifndef EXAMPLE_MESHES_H
 #define EXAMPLE_MESHES_H
 
+#include "TD/td_definitions.h"
 #include "TD/terdimension.h"
-
-// Texture of lebron's divine face
-TD_Texture lebron_texture = TD_TextureEMPTY;
 
 // Hard coded cube mesh
 TD_Mesh multicolor_cube = (TD_Mesh){
@@ -33,7 +31,7 @@ TD_Mesh multicolor_cube = (TD_Mesh){
 		TD_Vec3DOWN
 	},
 	NULL,
-	NULL,
+	TD_TextureEMPTY,
 	// v = vertex index, c = color / uv index
 	// n = normal index
 	// {v1,v2,v3, c1,c2,c3, n1,n2,3}
@@ -67,10 +65,10 @@ TD_Mesh multicolor_cube = (TD_Mesh){
 
 TD_Mesh textured_plane = (TD_Mesh){
 	(TD_Vec3[]){
-		{-0.5f,-0.5f,0.f},
-		{0.5f,-0.5f,0.f},
-		{-0.5f,0.5f,0.f},
-		{0.5f,0.5f,0.f}
+		{-1.f,-1.f,0.f},
+		{1.f,-1.f,0.f},
+		{-1.f,1.f,0.f},
+		{1.f,1.f,0.f}
 	},
 	NULL,
 	NULL,
@@ -80,16 +78,16 @@ TD_Mesh textured_plane = (TD_Mesh){
 		{0.f,2.f},
 		{2.f,2.f}
 	},
-	&lebron_texture,
+	TD_TextureEMPTY,
 	(TD_Face[]){
 		{0,1,2, 0,1,2},
 		{1,3,2, 1,3,2}
 	},
 	2,
 	(TD_Transform){
-		(TD_Vec3){0.f,-2.f,2.f},
-		(TD_Vec3){TD_to_rad(90.f),0.f,0.f},
-		(TD_Vec3){10.f,10.f,0.f}
+		(TD_Vec3){-2.f,0.f,3.f},
+		TD_Vec3ZERO,
+		TD_Vec3IDENTITY
 	}
 };
 
