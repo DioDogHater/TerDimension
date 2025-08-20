@@ -115,11 +115,17 @@ int main(...){
   // Makes sure the terminal is cleared
   TD_clear_screen();
 
+  // Setup the buffers
+  TD_clear_buffers();
+
   TD_use_shader(color_shader);
   TD_render_mesh(&triangle);
 
   TD_use_shader(texture_shader);
   TD_render_mesh(&monke);
+
+  // Show the monkey and the triangle
+  TD_update_screen();
   ...
 }
 ```
