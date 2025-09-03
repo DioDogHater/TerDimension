@@ -102,9 +102,7 @@ TD_FUNC void TD_print4bit_full(unsigned char fgc, unsigned char bgc){
 	putchar_unlocked('\x1b');
 	putchar_unlocked('[');
 	TD_print_uchar(fgc);
-	putchar_unlocked('m');
-	putchar_unlocked('\x1b');
-	putchar_unlocked('[');
+	putchar_unlocked(';');
 	TD_print_uchar(bgc);
 	putchar_unlocked('m');
 	for(const char* unicode = TD_TOP_HALF_BLOCK_str; *unicode; unicode++){
@@ -116,6 +114,8 @@ TD_FUNC void TD_print4bit_full(unsigned char fgc, unsigned char bgc){
 TD_FUNC void TD_print4bit_half(unsigned char bgc){
 	putchar_unlocked('\x1b');
 	putchar_unlocked('[');
+	putchar_unlocked('1');
+	putchar_unlocked(';');
 	TD_print_uchar(bgc);
 	putchar_unlocked('m');
 	putchar_unlocked(' ');
